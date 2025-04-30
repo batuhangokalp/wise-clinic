@@ -11,13 +11,14 @@ const Logout = React.lazy(() => import("../pages/Auth/Logout"));
 const ForgetPassword = React.lazy(() => import("../pages/Auth/ForgetPassword"));
 const Register = React.lazy(() => import("../pages/Auth/Register"));
 const LockScreen = React.lazy(() => import("../pages/Auth/LockScreen"));
+const MagicLink = React.lazy(() => import("../pages/Auth/MagicLink"));
 
 // declare all routes
 const authProtectedRoutes = [
   { path: "/dashboard", component: <Dashboard /> },
   { path: "/pages-starter", component: <StarterPage /> },
 
-    // this route should be at the end of all other routes
+  // this route should be at the end of all other routes
   // eslint-disable-next-line react/display-name
   {
     path: "/",
@@ -32,7 +33,8 @@ const publicRoutes = [
   { path: "/login", component: <Login /> },
   { path: "/forget-password", component: <ForgetPassword /> },
   { path: "/register", component: <Register /> },
-  { path: "/lock-screen", component: <LockScreen />}
+  { path: "/lock-screen", component: <LockScreen /> },
+  { path: "/magic-link", component: <MagicLink /> },
 ];
 
 export { authProtectedRoutes, publicRoutes };
