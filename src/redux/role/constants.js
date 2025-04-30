@@ -1,0 +1,126 @@
+export const CREATE_ROLE = "CREATE_ROLE";
+export const UPDATE_ROLE = "UPDATE_ROLE";
+export const DELETE_ROLE = "DELETE_ROLE";
+export const FETCH_ROLES = "FETCH_ROLES";
+export const FETCH_ROLE_PERMISSIONS = "FETCH_ROLE_PERMISSIONS";
+export const API_PERMISSION_ERROR = "API_PERMISSION_ERROR";
+export const API_PERMISSION_SUCCESS = "API_PERMISSION_SUCCESS";
+export const FETCH_PERMISSIONS_BY_ROLE_ID = "FETCH_PERMISSIONS_BY_ROLE_ID";
+export const CREATE_PERMISSION = "CREATE_PERMISSION";
+export const UPDATE_PERMISSION = "UPDATE_PERMISSION";
+export const DELETE_PERMISSION = "DELETE_PERMISSION";
+export const FETCH_PERMISSIONS = "FETCH_PERMISSIONS";
+export const API_ROLE_ERROR = "API_PERMISSION_ERROR";
+export const API_ROLE_SUCCESS = "API_PERMISSION_SUCCESS";
+
+
+
+// permissions.js
+
+export const ROLES = {
+    1: "Admin",
+    2: "Manager",
+    3: "User",
+    User: 3,
+    Manager: 2,
+    Admin: 1
+
+};
+
+export const PERMISSIONS = {
+    VIEW_ALL_CHATS: "VIEW_ALL_CHATS",
+    VIEW_ASSIGNED_CHATS: "VIEW_ASSIGNED_CHATS",
+    VIEW_ALL_CONTACTS: "VIEW_ALL_CONTACTS",
+    VIEW_ASSIGNED_CONTACTS: "VIEW_ASSIGNED_CONTACTS",
+    VIEW_REPORTS: "VIEW_REPORTS",
+
+
+    VIEW_CANNED_RESPONSES: "VIEW_CANNED_RESPONSES",
+    EDIT_CANNED_RESPONSES: "EDIT_CANNED_RESPONSES",
+    DELETE_CANNED_RESPONSES: "DELETE_CANNED_RESPONSES",
+
+    VIEW_TEMPLATES: "VIEW_TEMPLATES",
+    EDIT_TEMPLATES: "EDIT_TEMPLATES",
+    DELETE_TEMPLATES: "DELETE_TEMPLATES",
+
+
+
+    VIEW_ROLES: "VIEW_ROLES",
+    EDIT_ROLES: "EDIT_ROLES",
+    DELETE_ROLES: "DELETE_ROLES",
+
+
+    VIEW_USERS: "VIEW_USERS",
+    EDIT_USERS: "EDIT_USERS",
+    DELETE_USERS: "DELETE_USERS",
+
+    VIEW_DEPARTMENTS: "VIEW_DEPARTMENTS",
+    EDIT_DEPARTMENTS: "EDIT_DEPARTMENTS",
+    DELETE_DEPARTMENTS: "DELETE_DEPARTMENTS",
+
+    VIEW_POSITIONS: "VIEW_POSITIONS",
+    EDIT_POSITIONS: "EDIT_POSITIONS",
+    DELETE_POSITIONS: "DELETE_POSITIONS",
+
+
+    VIEW_CONTACTS_PANEL: "VIEW_CONTACTS_PANEL",
+    VIEW_CHATS_PANEL: "VIEW_CHATS_PANEL",
+    VIEW_REPORTS_PANEL: "VIEW_REPORTS_PANEL",
+    VIEW_SETTINGS_PANEL: "VIEW_SETTINGS_PANEL",
+    VIEW_PROFILE_PANEL: "VIEW_PROFILE_PANEL",
+
+
+};
+
+export const ROLE_PERMISSIONS = {
+    Admin: Object.values(PERMISSIONS),
+    Manager: [
+        PERMISSIONS.VIEW_CANNED_RESPONSES,
+        PERMISSIONS.EDIT_CANNED_RESPONSES,
+        PERMISSIONS.DELETE_CANNED_RESPONSES,
+
+        PERMISSIONS.VIEW_TEMPLATES,
+        PERMISSIONS.EDIT_TEMPLATES,
+        PERMISSIONS.DELETE_TEMPLATES,
+
+
+        PERMISSIONS.VIEW_SETTINGS_PANEL,
+        PERMISSIONS.VIEW_PROFILE_PANEL,
+        PERMISSIONS.VIEW_CONTACTS_PANEL,
+        PERMISSIONS.VIEW_CHATS_PANEL,
+        PERMISSIONS.VIEW_REPORTS_PANEL,
+
+        PERMISSIONS.VIEW_USERS
+    ],
+    User: [
+        PERMISSIONS.VIEW_CHATS_PANEL,
+        PERMISSIONS.VIEW_ASSIGNED_CHATS
+    ]
+};
+
+
+
+
+/*
+
+Rol Listeleri
+Admin
+Tüm komponentler
+
+Manager
+Tüm chat'ler
+Tüm contact'lar
+Tüm reporting tool
+Tüm canned response'lar (editlemek için ayrı bir sayfa gerekiyor)
+Tüm template'ler (editlemek için ayrı bir sayfa gerekiyor)
+
+User
+Sadece kendisine atanan chat'ler
+Sadece kendisine atanan contact'lar
+Canned response'lar (şu anki gibi kalabilir. Yani inbox üzerinden gönderilme özelliği)
+Template'ler (şu anki gibi kalabilir. Yani inbox üzerinden gönderilme özelliği)
+
+ */
+
+
+
