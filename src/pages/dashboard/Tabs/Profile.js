@@ -6,6 +6,8 @@ import {
   DropdownToggle,
   Card,
 } from "reactstrap";
+import * as Yup from "yup";
+import { useDispatch, useSelector } from "react-redux";
 
 //Import components
 import CustomCollapse from "../../../components/CustomCollapse";
@@ -15,13 +17,23 @@ import avatar1 from "../../../assets/images/users/avatar-1.jpg";
 
 //i18n
 import { useTranslation } from "react-i18next";
+import UpdateUserModal from "../../../components/UpdateUserModal";
+import {
+  apiUserError,
+  apiUserSuccess,
+  fetchUsers,
+  updateUser,
+} from "../../../redux/actions";
 
 function Profile() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [updateUserModal, setUpdateUserModal] = useState(false);
 
   const { t } = useTranslation();
+  const dispatch = useDispatch();
+
   const toggle = () => setDropdownOpen(!dropdownOpen);
 
   const userInfo =
@@ -29,6 +41,24 @@ function Profile() {
     JSON.parse(localStorage.getItem("authUser"));
 
   const currentUser = user?.user;
+
+  const userError = useSelector((state) => state.User.error);
+  const userSuccess = useSelector((state) => state.User.success);
+
+  const updateValidationSchema = Yup.object().shape({
+    name: Yup.string().required("Name is required"),
+    surname: Yup.string().required("Surname is required"),
+    email: Yup.string().required("Email is required"),
+    phone_number: Yup.string().required("Phone Number is required"),
+    password: Yup.string().nullable(),
+    role_id: Yup.number().required("Role is required"),
+    language_id: Yup.number().nullable(),
+    sex: Yup.string().nullable(),
+    birth_date: Yup.string().nullable(),
+    position: Yup.string().nullable(),
+    department: Yup.string().nullable(),
+    is_active: Yup.string().nullable(),
+  });
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -69,6 +99,24 @@ function Profile() {
     fetchUser();
   }, [userInfo]);
 
+  const handleUpdateSubmit = async (values) => {
+    console.log("valuuueeeess", values);
+    values["is_active"] = values.is_active ? "Y" : "N";
+    if (!values.password) {
+      delete values.password;
+    }
+    await dispatch(updateUser(values)).then((response) => {
+      if (response) {
+        setTimeout(async () => {
+          setUpdateUserModal(false);
+          dispatch(fetchUsers());
+          dispatch(apiUserError(null));
+          dispatch(apiUserSuccess(null));
+        }, 3000);
+      }
+    });
+  };
+
   if (loading) return <p className="p-4">{t("Loading...")}</p>;
   if (!user) return <p className="p-4 text-danger">{t("User not found")}</p>;
 
@@ -85,7 +133,25 @@ function Profile() {
                 <i className="ri-more-2-fill"></i>
               </DropdownToggle>
               <DropdownMenu className="dropdown-menu-end">
-                <DropdownItem>{t("Edit")}</DropdownItem>
+                <DropdownItem onClick={() => setUpdateUserModal(true)}>
+                  {t("Edit")}
+                </DropdownItem>
+                <UpdateUserModal
+                  modal={updateUserModal}
+                  toggleModal={() => {
+                    setUpdateUserModal(!updateUserModal);
+                    dispatch(apiUserError(null));
+                    dispatch(apiUserSuccess(null));
+                  }}
+                  validationSchema={updateValidationSchema}
+                  selectedUser={currentUser}
+                  parentProps={{
+                    t: t,
+                    error: userError,
+                    success: userSuccess,
+                  }}
+                  handleSubmit={handleUpdateSubmit}
+                />
                 <DropdownItem>{t("Action")}</DropdownItem>
                 <DropdownItem divider />
                 <DropdownItem>{t("Another action")}</DropdownItem>

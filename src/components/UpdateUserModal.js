@@ -52,16 +52,12 @@ export default function UpdateUserModal(props) {
     }
   }, [languages]);
 
-  useEffect(() => {
-    if (selectedUser) {
-      console.log(selectedUser);
-    }
-  }, [selectedUser]);
+
 
   return (
     <Modal size="xl" isOpen={modal} centered toggle={toggleModal}>
       <ModalHeader tag="h5" className="font-size-16" toggle={toggleModal}>
-        {parentProps.t("Update User")}
+        {parentProps?.t?.("Update User")}
       </ModalHeader>
       <ModalBody className="p-4">
         <Formik
@@ -85,14 +81,14 @@ export default function UpdateUserModal(props) {
                   {/* Name Field */}
                   <div className="mb-4">
                     <Label className="form-label" htmlFor="name">
-                      {parentProps.t("Name")}
+                      {parentProps?.t?.("Name")}
                     </Label>
                     <Field
                       name="name"
                       type="text"
                       className="form-control"
                       id="name"
-                      placeholder={parentProps.t("Enter name")}
+                      placeholder={parentProps?.t?.("Enter name")}
                       style={errors.name ? { borderColor: "red" } : {}}
                     />
                     {errors.name && touched.name && (
@@ -103,14 +99,14 @@ export default function UpdateUserModal(props) {
                   {/* Description Field */}
                   <div className="mb-4">
                     <Label className="form-label" htmlFor="surname">
-                      {parentProps.t("Surname")}
+                      {parentProps?.t?.("Surname")}
                     </Label>
                     <Field
                       name="surname"
                       type="text"
                       className="form-control"
                       id="surname"
-                      placeholder={parentProps.t("Enter surname")}
+                      placeholder={parentProps?.t?.("Enter surname")}
                       style={errors.surname ? { borderColor: "red" } : {}}
                     />
                     {errors.surname && touched.surname && (
@@ -121,14 +117,14 @@ export default function UpdateUserModal(props) {
                   {/* Email Field */}
                   <div className="mb-4">
                     <Label className="form-label" htmlFor="email">
-                      {parentProps.t("Email")}
+                      {parentProps?.t?.("Email")}
                     </Label>
                     <Field
                       name="email"
                       type="email"
                       className="form-control"
                       id="email"
-                      placeholder={parentProps.t("Enter email")}
+                      placeholder={parentProps?.t?.("Enter email")}
                       style={errors.email ? { borderColor: "red" } : {}}
                     />
                     {errors.email && touched.email && (
@@ -139,14 +135,14 @@ export default function UpdateUserModal(props) {
                   {/* Phone Number Field */}
                   <div className="mb-4">
                     <Label className="form-label" htmlFor="phone_number">
-                      {parentProps.t("Phone Number")}
+                      {parentProps?.t?.("Phone Number")}
                     </Label>
                     <Field
                       name="phone_number"
                       type="tel"
                       className="form-control"
                       id="phone_number"
-                      placeholder={parentProps.t("Enter phone number")}
+                      placeholder={parentProps?.t?.("Enter phone number")}
                       style={errors.phone_number ? { borderColor: "red" } : {}}
                     />
                     {errors.phone_number && touched.phone_number && (
@@ -159,7 +155,7 @@ export default function UpdateUserModal(props) {
                   {/* Password Field */}
                   <div className="mb-4">
                     <Label className="form-label" htmlFor="password">
-                      {parentProps.t("Password")}
+                      {parentProps?.t?.("Password")}
                     </Label>
                     <Field
                       name="password"
@@ -167,7 +163,7 @@ export default function UpdateUserModal(props) {
                       className="form-control"
                       id="password"
                       value={null}
-                      placeholder={parentProps.t("Enter password")}
+                      placeholder={parentProps?.t?.("Enter password")}
                       style={errors.password ? { borderColor: "red" } : {}}
                     />
                     {errors.password && touched.password && (
@@ -180,7 +176,7 @@ export default function UpdateUserModal(props) {
                   {/* Role Field */}
                   <div className="mb-4">
                     <Label className="form-label" htmlFor="country">
-                      {parentProps.t("Role")}
+                      {parentProps?.t?.("Role")}
                     </Label>
                     <Field
                       name="role_id"
@@ -189,11 +185,11 @@ export default function UpdateUserModal(props) {
                       id="role_id"
                     >
                       <option value="" disabled>
-                        {parentProps.t("Select role")}
+                        {parentProps?.t?.("Select role")}
                       </option>
                       {roles.map((role) => (
                         <option key={role.id} value={role.id}>
-                          {parentProps.t(role.role_name)}
+                          {parentProps?.t?.(role.role_name)}
                         </option>
                       ))}
                     </Field>
@@ -207,7 +203,7 @@ export default function UpdateUserModal(props) {
                   {/* Language Field */}
                   <div className="mb-4">
                     <Label className="form-label" htmlFor="language_id">
-                      {parentProps.t("Language")}
+                      {parentProps?.t?.("Language")}
                     </Label>
                     <Field
                       name="language_id"
@@ -216,11 +212,11 @@ export default function UpdateUserModal(props) {
                       id="language_id"
                     >
                       <option value="" disabled>
-                        {parentProps.t("Select language")}
+                        {parentProps?.t?.("Select language")}
                       </option>
                       {languages.map((language) => (
                         <option key={language.id} value={language.id}>
-                          {parentProps.t(language.language_name)}
+                          {parentProps?.t?.(language.language_name)}
                         </option>
                       ))}
                     </Field>
@@ -234,22 +230,22 @@ export default function UpdateUserModal(props) {
                   {/* Position Field */}
                   <div className="mb-4">
                     <Label className="form-label" htmlFor="position">
-                      {parentProps.t("Position")}
+                      {parentProps?.t?.("Position")}
                     </Label>
                     <Field
                       name="position"
                       as="select"
                       className="form-control"
                       id="position"
-                      placeholder={parentProps.t("Enter position")}
+                      placeholder={parentProps?.t?.("Enter position")}
                       style={errors.position ? { borderColor: "red" } : {}}
                     >
                       <option value="" disabled>
-                        {parentProps.t("Select position")}
+                        {parentProps?.t?.("Select position")}
                       </option>
                       {positions.map((position) => (
                         <option key={position.id} value={position.id}>
-                          {parentProps.t(position.name)}
+                          {parentProps?.t?.(position.name)}
                         </option>
                       ))}
                     </Field>
@@ -263,22 +259,22 @@ export default function UpdateUserModal(props) {
                   {/* Department Field */}
                   <div className="mb-4">
                     <Label className="form-label" htmlFor="department">
-                      {parentProps.t("Department")}
+                      {parentProps?.t?.("Department")}
                     </Label>
                     <Field
                       name="department"
                       as="select"
                       className="form-control"
                       id="department"
-                      placeholder={parentProps.t("Enter department")}
+                      placeholder={parentProps?.t?.("Enter department")}
                       style={errors.department ? { borderColor: "red" } : {}}
                     >
                       <option value="" disabled>
-                        {parentProps.t("Select department")}
+                        {parentProps?.t?.("Select department")}
                       </option>
                       {departments.map((department) => (
                         <option key={department.id} value={department.id}>
-                          {parentProps.t(department.name)}
+                          {parentProps?.t?.(department.name)}
                         </option>
                       ))}
                     </Field>
@@ -292,7 +288,7 @@ export default function UpdateUserModal(props) {
                   {/* Is Active Field */}
                   <div className="mb-4">
                     <Label className="form-label" htmlFor="is_active">
-                      {parentProps.t("Is Active")}
+                      {parentProps?.t?.("Is Active")}
                     </Label>
                     <Field name="is_active">
                       {({ field, form }) => (
@@ -313,8 +309,8 @@ export default function UpdateUserModal(props) {
                             htmlFor="is_active"
                           >
                             {field.value
-                              ? parentProps.t("Active")
-                              : parentProps.t("Inactive")}
+                              ? parentProps?.t?.("Active")
+                              : parentProps?.t?.("Inactive")}
                           </label>
                         </div>
                       )}
@@ -329,22 +325,22 @@ export default function UpdateUserModal(props) {
                   {/* Sex Field */}
                   <div className="mb-4">
                     <Label className="form-label" htmlFor="sex">
-                      {parentProps.t("Sex")}
+                      {parentProps?.t?.("Sex")}
                     </Label>
                     <Field
                       name="sex"
                       as="select"
                       className="form-control"
                       id="sex"
-                      placeholder={parentProps.t("Enter sex")}
+                      placeholder={parentProps?.t?.("Enter sex")}
                       style={errors.sex ? { borderColor: "red" } : {}}
                     >
                       <option value="" disabled>
-                        {parentProps.t("Select sex")}
+                        {parentProps?.t?.("Select sex")}
                       </option>
                       {sexList.map((sex) => (
                         <option key={sex.key} value={sex.key}>
-                          {parentProps.t(sex.value)}
+                          {parentProps?.t?.(sex.value)}
                         </option>
                       ))}
                     </Field>
@@ -356,7 +352,7 @@ export default function UpdateUserModal(props) {
                   {/* Birth Date Field */}
                   <div className="mb-4">
                     <Label className="form-label" htmlFor="birth_date">
-                      {parentProps.t("Birth Date")}
+                      {parentProps?.t?.("Birth Date")}
                     </Label>
                     <Field
                       name="birth_date"
@@ -364,7 +360,7 @@ export default function UpdateUserModal(props) {
                       className="form-control"
                       id="birth_date"
                       value={dayjs(values.birth_date).format("YYYY-MM-DD")}
-                      placeholder={parentProps.t("Enter birth date")}
+                      placeholder={parentProps?.t?.("Enter birth date")}
                       style={errors.birth_date ? { borderColor: "red" } : {}}
                     />
                     {errors.birth_date && touched.birth_date && (
@@ -377,7 +373,7 @@ export default function UpdateUserModal(props) {
               </div>
 
               <ModalFooter style={{ display: "block" }}>
-                {parentProps.success && (
+                {parentProps?.success && (
                   <div
                     style={{
                       display: "block",
@@ -385,10 +381,10 @@ export default function UpdateUserModal(props) {
                       textAlign: "center",
                     }}
                   >
-                    <Alert color="success">{parentProps.success}</Alert>
+                    <Alert color="success">{parentProps?.success}</Alert>
                   </div>
                 )}
-                {parentProps.error && (
+                {parentProps?.error && (
                   <div
                     style={{
                       display: "block",
@@ -396,15 +392,15 @@ export default function UpdateUserModal(props) {
                       textAlign: "center",
                     }}
                   >
-                    <Alert color="danger">{parentProps.error}</Alert>
+                    <Alert color="danger">{parentProps?.error}</Alert>
                   </div>
                 )}
                 <div style={{ display: "flex", justifyContent: "end" }}>
                   <Button type="button" color="link" onClick={toggleModal}>
-                    {parentProps.t("Close")}
+                    {parentProps?.t?.("Close")}
                   </Button>
                   <Button type="submit" color="primary">
-                    {parentProps.t("Update User")}
+                    {parentProps?.t?.("Update User")}
                   </Button>
                 </div>
               </ModalFooter>
