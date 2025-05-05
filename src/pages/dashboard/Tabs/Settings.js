@@ -22,7 +22,7 @@ function Settings(props) {
   };
 
   useEffect(() => {
-    if (hasPermission(roleId, PERMISSIONS.VIEW_ROLES)) {
+    if (roleId === 1 && hasPermission(roleId, PERMISSIONS.VIEW_ROLES)) {
       setActiveTab("roles");
     } else if (hasPermission(roleId, PERMISSIONS.VIEW_USERS)) {
       setActiveTab("users");
@@ -44,7 +44,7 @@ function Settings(props) {
           <h4 className="mb-0">{t("Settings")}</h4>
           <Row className="ms-2">
             <Nav tabs>
-              {hasPermission(roleId, PERMISSIONS.VIEW_ROLES) && (
+              {roleId === 1 && hasPermission(roleId, PERMISSIONS.VIEW_ROLES) && (
                 <NavItem>
                   <NavLink
                     className={

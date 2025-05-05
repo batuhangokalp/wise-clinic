@@ -32,7 +32,6 @@ function UsersCard(props) {
   const [updateUserModal, setUpdateUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  console.log(users, "users");
   const createValidationSchema = Yup.object().shape({
     name: Yup.string().required("Name is required"),
     surname: Yup.string().required("Surname is required"),
@@ -128,7 +127,6 @@ function UsersCard(props) {
   };
 
   const handleUpdateSubmit = async (values) => {
-    console.log("valuuueeeess", values);
     values["is_active"] = values.is_active ? "Y" : "N";
     // Only send the password if it's not empty or null
     if (!values.password) {
@@ -173,7 +171,6 @@ function UsersCard(props) {
     });
   };
 
-  console.log(headerGroups, "headerGroups");
   return (
     <div className="d-flex justify-content-center">
       <Col xxl={1}></Col>
