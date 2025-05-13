@@ -92,7 +92,6 @@ export const useTabNavigation = () => {
   const VALID_TABS = ["chat", "group", "contacts", "settings", "profile"]; // Add all valid tab IDs
 
   const toggleTab = (tab) => {
-    console.log("32478362748362432", tab);
     if (VALID_TABS.includes(tab)) {
       dispatch(setActiveTab(tab));
       navigate(`/dashboard?tabId=${tab}`);
