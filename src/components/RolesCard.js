@@ -135,138 +135,133 @@ export default function RolesCard(props) {
 
   return (
     <div className="d-flex justify-content-center">
-      {userInfo?.role_id === 1 && (
-        <>
-          <Col xxl={1}></Col>
-          <Col xs={12} xl={12} xxl={12} className="container mt-4 ms-4">
-            <div className="card shadow-sm">
-              <div className="card-header bg-light d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">{props.t("Roles")}</h5>
-                <div className="d-flex flex-wrap gap-2 w-50">
-                  <input
-                    placeholder={props.t("Search Roles")}
-                    type="text"
-                    className="form-control"
-                    id="role"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-                <div className="d-flex flex-wrap gap-2">
-                  <button
-                    className="btn btn-outline-primary"
-                    onClick={() => {
-                      dispatch(apiRoleError(null));
-                      dispatch(apiRoleSuccess(null));
-                      setCreateRoleModal(true);
-                    }}
-                  >
-                    {props.t("Create Role")}
-                  </button>
-                </div>
+      <>
+        <Col xxl={1}></Col>
+        <Col xs={12} xl={12} xxl={12} className="container mt-4 ms-4">
+          <div className="card shadow-sm">
+            <div className="card-header bg-light d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">{props.t("Roles")}</h5>
+              <div className="d-flex flex-wrap gap-2 w-50">
+                <input
+                  placeholder={props.t("Search Roles")}
+                  type="text"
+                  className="form-control"
+                  id="role"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-              <div className="card-body">
-                <div className="mb-4">
-                  {/* Roles Table Section */}
-                  <table
-                    className="table border border-2 table-bordered text-center"
-                    {...getTableProps()}
-                  >
-                    <thead>
-                      {headerGroups.map((headerGroup) => (
-                        <tr {...headerGroup.getHeaderGroupProps()}>
-                          {headerGroup.headers.map((column) => (
-                            <th {...column.getHeaderProps()}>
-                              {column.render("Header")}
-                            </th>
-                          ))}
-                          <th>{props.t("Actions")}</th>
-                        </tr>
-                      ))}
-                    </thead>
-                    <tbody {...getTableBodyProps()}>
-                      {rows.map((row) => {
-                        prepareRow(row);
-                        return (
-                          <tr {...row.getRowProps()}>
-                            {row.cells.map((cell) => (
-                              <td
-                                className="text-break"
-                                {...cell.getCellProps()}
-                              >
-                                {cell.render("Cell")}
-                              </td>
-                            ))}
-                            <td>
-                              {/* button group for edit and delete */}
-                              <div className="btn-group">
-                                {/*<button className="btn btn-dark">
-                                                                {t('Users')}
-                                                            </button>*/}
-                                <button
-                                  className="btn btn-primary"
-                                  onClick={() => {
-                                    setSelectedRole(row.original);
-                                    dispatch(apiRoleError(null));
-                                    dispatch(apiRoleSuccess(null));
-                                    setUpdateRoleModal(true);
-                                  }}
-                                >
-                                  {props.t("Edit")}
-                                </button>
-                                <button
-                                  className="btn btn-secondary"
-                                  onClick={(e) => {
-                                    handleDelete(e, row.original.id);
-                                  }}
-                                >
-                                  {props.t("Delete")}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="d-flex flex-wrap gap-2">
+                <button
+                  className="btn btn-outline-primary"
+                  onClick={() => {
+                    dispatch(apiRoleError(null));
+                    dispatch(apiRoleSuccess(null));
+                    setCreateRoleModal(true);
+                  }}
+                >
+                  {props.t("Create Role")}
+                </button>
               </div>
             </div>
-          </Col>
-          <Col xxl={1}></Col>
-          <CreateRoleModal
-            modal={createRoleModal}
-            toggleModal={() => {
-              setCreateRoleModal(!createRoleModal);
-              dispatch(apiRoleError(null));
-              dispatch(apiRoleSuccess(null));
-            }}
-            parentProps={{
-              t: props.t,
-              error: roleError,
-              success: roleSuccess,
-            }}
-            validationSchema={createValidationSchema}
-            handleSubmit={handleCreateSubmit}
-          />
-          <UpdateRoleModal
-            modal={updateRoleModal}
-            toggleModal={() => {
-              setUpdateRoleModal(!updateRoleModal);
-              dispatch(apiRoleError(null));
-              dispatch(apiRoleSuccess(null));
-            }}
-            parentProps={{
-              t: props.t,
-              error: roleError,
-              success: roleSuccess,
-            }}
-            validationSchema={updateValidationSchema}
-            handleSubmit={handleUpdateSubmit}
-            selectedRole={selectedRole}
-          />
-        </>
-      )}
+            <div className="card-body">
+              <div className="mb-4">
+                {/* Roles Table Section */}
+                <table
+                  className="table border border-2 table-bordered text-center"
+                  {...getTableProps()}
+                >
+                  <thead>
+                    {headerGroups.map((headerGroup) => (
+                      <tr {...headerGroup.getHeaderGroupProps()}>
+                        {headerGroup.headers.map((column) => (
+                          <th {...column.getHeaderProps()}>
+                            {column.render("Header")}
+                          </th>
+                        ))}
+                        <th>{props.t("Actions")}</th>
+                      </tr>
+                    ))}
+                  </thead>
+                  <tbody {...getTableBodyProps()}>
+                    {rows.map((row) => {
+                      prepareRow(row);
+                      return (
+                        <tr {...row.getRowProps()}>
+                          {row.cells.map((cell) => (
+                            <td className="text-break" {...cell.getCellProps()}>
+                              {cell.render("Cell")}
+                            </td>
+                          ))}
+                          <td>
+                            {/* button group for edit and delete */}
+                            <div className="btn-group">
+                              {/*<button className="btn btn-dark">
+                                                                {t('Users')}
+                                                            </button>*/}
+                              <button
+                                className="btn btn-primary"
+                                onClick={() => {
+                                  setSelectedRole(row.original);
+                                  dispatch(apiRoleError(null));
+                                  dispatch(apiRoleSuccess(null));
+                                  setUpdateRoleModal(true);
+                                }}
+                              >
+                                {props.t("Edit")}
+                              </button>
+                              <button
+                                className="btn btn-secondary"
+                                onClick={(e) => {
+                                  handleDelete(e, row.original.id);
+                                }}
+                              >
+                                {props.t("Delete")}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </Col>
+        <Col xxl={1}></Col>
+        <CreateRoleModal
+          modal={createRoleModal}
+          toggleModal={() => {
+            setCreateRoleModal(!createRoleModal);
+            dispatch(apiRoleError(null));
+            dispatch(apiRoleSuccess(null));
+          }}
+          parentProps={{
+            t: props.t,
+            error: roleError,
+            success: roleSuccess,
+          }}
+          validationSchema={createValidationSchema}
+          handleSubmit={handleCreateSubmit}
+        />
+        <UpdateRoleModal
+          modal={updateRoleModal}
+          toggleModal={() => {
+            setUpdateRoleModal(!updateRoleModal);
+            dispatch(apiRoleError(null));
+            dispatch(apiRoleSuccess(null));
+          }}
+          parentProps={{
+            t: props.t,
+            error: roleError,
+            success: roleSuccess,
+          }}
+          validationSchema={updateValidationSchema}
+          handleSubmit={handleUpdateSubmit}
+          selectedRole={selectedRole}
+        />
+      </>
     </div>
   );
 }

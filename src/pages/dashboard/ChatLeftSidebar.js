@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { connect } from "react-redux";
 
 import { TabContent, TabPane } from "reactstrap";
@@ -11,51 +11,37 @@ import Settings from "./Tabs/Settings";
 
 function ChatLeftSidebar(props) {
 
-    const activeTab = props.activeTab;
+  const activeTab = props.activeTab;
 
-    return (
-        <React.Fragment>
-            <div className="chat-leftsidebar me-lg-1">
+  return (
+    <React.Fragment>
+      <div className="chat-leftsidebar me-lg-1">
+        <TabContent activeTab={activeTab}>
+          <TabPane tabId="profile" id="pills-user">
+            <Profile />
+          </TabPane>
 
-                <TabContent activeTab={activeTab}  >
-                    {/* Start Profile tab-pane */}
-                    <TabPane tabId="profile" id="pills-user"   >
-                        {/* profile content  */}
-                        <Profile />
-                    </TabPane>
-                    {/* End Profile tab-pane  */}
+          <TabPane tabId="chat" id="pills-chat">
+            <Chats recentChatList={props.recentChatList} />
+          </TabPane>
 
-                    {/* Start chats tab-pane  */}
-                    <TabPane tabId="chat" id="pills-chat">
-                        {/* chats content */}
-                        <Chats recentChatList={props.recentChatList} />
-                    </TabPane>
-                    {/* End chats tab-pane */}
-                    {/* Start contacts tab-pane */}
-                    <TabPane tabId="contacts" id="pills-contacts">
-                        {/* Contact content */}
-                        <Contacts />
-                    </TabPane>
-                    {/* End contacts tab-pane */}
+          <TabPane tabId="contacts" id="pills-contacts">
+            <Contacts />
+          </TabPane>
 
-                    {/* Start settings tab-pane */}
-                    <TabPane tabId="settings" id="pills-setting">
-                        {/* Settings content */}
-                        <Settings />
-                    </TabPane>
-                    {/* End settings tab-pane */}
-                </TabContent>
-                {/* end tab content */}
-
-            </div>
-        </React.Fragment>
-    );
+          <TabPane tabId="settings" id="pills-setting">
+            <Settings />
+          </TabPane>
+        </TabContent>
+      </div>
+    </React.Fragment>
+  );
 }
 
-const mapStatetoProps = state => {
-    return {
-        ...state.Layout
-    };
+const mapStatetoProps = (state) => {
+  return {
+    ...state.Layout,
+  };
 };
 
 export default connect(mapStatetoProps, null)(ChatLeftSidebar);

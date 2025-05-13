@@ -100,7 +100,6 @@ function Profile() {
   }, [userInfo]);
 
   const handleUpdateSubmit = async (values) => {
-    console.log("valuuueeeess", values);
     values["is_active"] = values.is_active ? "Y" : "N";
     if (!values.password) {
       delete values.password;

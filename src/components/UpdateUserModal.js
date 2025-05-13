@@ -52,8 +52,6 @@ export default function UpdateUserModal(props) {
     }
   }, [languages]);
 
-
-
   return (
     <Modal size="xl" isOpen={modal} centered toggle={toggleModal}>
       <ModalHeader tag="h5" className="font-size-16" toggle={toggleModal}>

@@ -46,19 +46,38 @@ export default function TemplatesCard(props) {
   const [createTemplateModal, setCreateTemplateModal] = useState(false);
   const [updateTemplateModal, setUpdateTemplateModal] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [variableContent, setVariableContent] = useState("");
+  const [variableHeader, setVariableHeader] = useState("");
+  const [inputVariable, setInputVariable] = useState("");
+  const [inputVariableHeader, setInputVariableHeader] = useState("");
+
+  const [open, setOpen] = useState(false);
+  const [openHeaderModal, setOpenHeaderModal] = useState(false);
+
   const error = useSelector((state) => state.Templates.error);
   const success = useSelector((state) => state.Templates.success);
 
   const createValidationSchema = Yup.object().shape({
-    elementName: Yup.string().required(props.t("Template name is required")),
-    data: Yup.string().required(props.t("Content is required")),
+    element_name: Yup.string().required(props.t("Template name is required")),
+    content: Yup.string().required(props.t("Content is required")),
   });
 
   const updateValidationSchema = Yup.object().shape({
-    elementName: Yup.string().required(props.t("Template name is required")),
-    data: Yup.string().required(props.t("Content is required")),
+    element_name: Yup.string().required(props.t("Template name is required")),
+    content: Yup.string().required(props.t("Content is required")),
   });
 
+  const toggle = () => setOpen(!open);
+  const toggleHeaderModal = () => setOpenHeaderModal(!openHeaderModal);
+
+  const handleAddVariableContent = (inputVar) => {
+    setInputVariable(inputVar);
+    toggle();
+  };
+  const handleAddVariableHeader = (inputVar) => {
+    setInputVariableHeader(inputVar);
+    toggleHeaderModal();
+  };
   useEffect(() => {
     dispatch(fetchTemplates());
   }, [dispatch]);
@@ -101,6 +120,8 @@ export default function TemplatesCard(props) {
   } = tableInstance;
 
   const handleCreateSubmit = async (values) => {
+    values.contentVariable = `{{${inputVariable}}}`;
+    values.headerVariable = `{{${inputVariableHeader}}}`;
     await dispatch(createTemplate(values)).then((response) => {
       if (response) {
         setTimeout(async () => {
@@ -152,7 +173,6 @@ export default function TemplatesCard(props) {
       }
     });
   };
-
   return (
     <div className="d-flex justify-content-center">
       <Col xxl={1}></Col>
@@ -280,6 +300,18 @@ export default function TemplatesCard(props) {
         }}
         validationSchema={createValidationSchema}
         handleSubmit={handleCreateSubmit}
+        open={open}
+        setOpen={setOpen}
+        toggle={toggle}
+        variableContent={variableContent}
+        setVariableContent={setVariableContent}
+        handleAddVariableContent={handleAddVariableContent}
+        openHeaderModal={openHeaderModal}
+        setOpenHeaderModal={setOpenHeaderModal}
+        toggleHeaderModal={toggleHeaderModal}
+        variableHeader={variableHeader}
+        setVariableHeader={setVariableHeader}
+        handleAddVariableHeader={handleAddVariableHeader}
       />
       <UpdateTemplateModal
         modal={updateTemplateModal}

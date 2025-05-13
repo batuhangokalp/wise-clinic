@@ -91,7 +91,7 @@ function LeftSidebarMenu(props) {
                 props.setActiveTab(tabId)
             }
         }
-    }, [location.search]);
+    }, [location.search, props.setActiveTab]);
 
     return (
         <React.Fragment>
