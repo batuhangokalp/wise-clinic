@@ -172,10 +172,13 @@ export default function RolesCard(props) {
                   {...getTableProps()}
                 >
                   <thead>
-                    {headerGroups.map((headerGroup) => (
-                      <tr {...headerGroup.getHeaderGroupProps()}>
-                        {headerGroup.headers.map((column) => (
-                          <th {...column.getHeaderProps()}>
+                    {headerGroups?.map((headerGroup) => (
+                      <tr
+                        key={headerGroup.id}
+                        {...headerGroup.getHeaderGroupProps()}
+                      >
+                        {headerGroup.headers?.map((column) => (
+                          <th key={column.id} {...column.getHeaderProps()}>
                             {column.render("Header")}
                           </th>
                         ))}
@@ -184,12 +187,16 @@ export default function RolesCard(props) {
                     ))}
                   </thead>
                   <tbody {...getTableBodyProps()}>
-                    {rows.map((row) => {
+                    {rows?.map((row) => {
                       prepareRow(row);
                       return (
-                        <tr {...row.getRowProps()}>
-                          {row.cells.map((cell) => (
-                            <td className="text-break" {...cell.getCellProps()}>
+                        <tr key={row.id} {...row.getRowProps()}>
+                          {row?.cells?.map((cell) => (
+                            <td
+                              key={cell.column.id}
+                              className="text-break"
+                              {...cell.getCellProps()}
+                            >
                               {cell.render("Cell")}
                             </td>
                           ))}

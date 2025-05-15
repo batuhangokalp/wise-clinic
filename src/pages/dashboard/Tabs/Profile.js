@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Dropdown,
   DropdownMenu,
@@ -35,10 +35,10 @@ function Profile() {
   const dispatch = useDispatch();
 
   const toggle = () => setDropdownOpen(!dropdownOpen);
-
-  const userInfo =
-    localStorage.getItem("authUser") &&
-    JSON.parse(localStorage.getItem("authUser"));
+  const userInfo = useMemo(() => {
+    const stored = localStorage.getItem("authUser");
+    return stored ? JSON.parse(stored) : null;
+  }, []); 
 
   const currentUser = user?.user;
 
@@ -61,32 +61,25 @@ function Profile() {
   });
 
   useEffect(() => {
+    if (!userInfo?.id) return;
+  
     const fetchUser = async () => {
       try {
-        if (!userInfo || !userInfo.id) {
-          console.error("userInfo.id bulunamadı");
-          return;
-        }
-
         const res = await fetch(
           `${process.env.REACT_APP_API_URL}/api/users/${userInfo.id}`,
           {
             headers: {
-              Accept: "*/*",
-              "Accept-Encoding": "gzip, deflate",
-              "User-Agent":
-                "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0",
-              Host: `${process.env.REACT_APP_API_URL}`,
+              Accept: "application/json",
               "ngrok-skip-browser-warning": 69420,
             },
           }
         );
-
+  
         if (!res.ok) {
           const errText = await res.text();
           throw new Error(`Kullanıcı alınamadı: ${res.status} - ${errText}`);
         }
-
+  
         const data = await res.json();
         setUser(data);
       } catch (err) {
@@ -95,9 +88,9 @@ function Profile() {
         setLoading(false);
       }
     };
-
+  
     fetchUser();
-  }, [userInfo]);
+  }, [userInfo?.id]);
 
   const handleUpdateSubmit = async (values) => {
     values["is_active"] = values.is_active ? "Y" : "N";

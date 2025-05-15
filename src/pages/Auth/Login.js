@@ -61,7 +61,7 @@ const Login = (props) => {
     let tokenJson = JSON.parse(tokenData);
     let userId = tokenJson?.id;
 
-    let user = await dispatch(fetchUserById(userId));
+    let user = dispatch(fetchUserById(userId));
     localStorage.setItem("authUser", JSON.stringify(user));
   };
 

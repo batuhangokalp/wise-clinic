@@ -210,9 +210,12 @@ function UsersCard(props) {
               >
                 <thead>
                   {headerGroups.map((headerGroup) => (
-                    <tr {...headerGroup.getHeaderGroupProps()}>
+                    <tr
+                      key={headerGroup.id}
+                      {...headerGroup.getHeaderGroupProps()}
+                    >
                       {headerGroup.headers.map((column) => (
-                        <th {...column.getHeaderProps()}>
+                        <th key={column.id} {...column.getHeaderProps()}>
                           {column.render("Header")}
                         </th>
                       ))}
@@ -224,9 +227,13 @@ function UsersCard(props) {
                   {page.map((row) => {
                     prepareRow(row);
                     return (
-                      <tr {...row.getRowProps()}>
+                      <tr key={row.id} {...row.getRowProps()}>
                         {row.cells.map((cell) => (
-                          <td className="text-break" {...cell.getCellProps()}>
+                          <td
+                            key={cell.column.id}
+                            className="text-break"
+                            {...cell.getCellProps()}
+                          >
                             {cell.render("Cell")}
                           </td>
                         ))}
