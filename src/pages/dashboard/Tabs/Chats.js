@@ -1,7 +1,7 @@
-import React, { Component, useEffect, useRef } from "react";
+import React, { act, Component, useEffect, useRef, useState } from "react";
 import { Input, InputGroup } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
-import { connect, useSelector } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import {
   ChatPlatform,
   ChatPlatformConverter,
@@ -26,41 +26,93 @@ import {
   setChatMessages,
 } from "../../../redux/actions";
 import { ROLES } from "../../../redux/role/constants";
+import { io } from "socket.io-client";
 
 // Create a wrapper functional component
 const ChatsWrapper = (props) => {
-  let user = useSelector((state) => state.User.user);
+  const SOCKET_SERVER_URL = `${process.env.REACT_APP_SOCKET_SERVER_URL}`;
+  const chatMessages = useSelector((state) => state.Chat.chatMessages);
+  const dispatch = useDispatch();
+  const [socket, setSocket] = useState(null);
+
+  const user = useSelector((state) => state.User.user);
+  const prevIdRef = useRef();
   const { updateChatUrl } = useChatUrlParams(
     props.conversations,
     props.setActiveConversationId,
     props.setActiveConversation
   );
 
-  const prevIdRef = useRef();
+  useEffect(() => {
+    // Initialize the socket connection
+    const socketInstance = io(SOCKET_SERVER_URL, {
+      transports: ["websocket"], // Optional, just in case you want to ensure WebSocket connection
+      debug: true,
+    });
+
+    // Save the socket instance in the state
+    setSocket(socketInstance);
+
+    // Clean up the socket connection when the component is unmounted
+    return () => {
+      socketInstance.disconnect();
+      console.log("Disconnected from the server");
+    };
+  }, [SOCKET_SERVER_URL]);
 
   useEffect(() => {
-    const currentId = props.activeConversation?.id;
+    if (!socket || !props.activeConversation?.id) return;
+  
+    const currentId = props.activeConversation.id;
+  
     const availableConversation = props.conversations?.find(
       (conv) => conv.id === currentId
     );
-
-    // Eğer activeConversation yoksa veya listede bulunmuyorsa resetle
+  
+    props.fetchMessagesByConversationId(props.activeConversation);
+  
     if (currentId && !availableConversation) {
       props.setActiveConversation(null);
       props.setActiveConversationId(null);
     }
-
+  
     if (currentId && currentId !== prevIdRef.current) {
       prevIdRef.current = currentId;
-      props.activeConversation.last_message_id &&
-        props.fetchMessagesByConversationId(props.activeConversation);
+      props.fetchMessagesByConversationId(props.activeConversation);
     }
-  }, [props.conversations, props.activeConversation]);
+  
+    const handleNewMessage = (message) => {
+      console.log("Yeni mesaj geldi:", message);
+  
+      if (message.conversation_id === props.activeConversation?.id) {
+        dispatch(fetchMessagesByConversationId(props.activeConversation));
+      }
+  
+      dispatch(fetchConversations());
+    };
+  
+    socket.on("new_message", handleNewMessage);
+  
+    return () => {
+      socket.off("new_message", handleNewMessage);
+    };
+  }, [
+    socket,
+    props.conversations,
+    props.activeConversation?.id,
+    props.activeConversation?.last_message_id,
+  ]);
+  
 
   return (
-    <>
-      <Chats updateChatUrl={updateChatUrl} user={user} {...props} />
-    </>
+    <Chats
+      updateChatUrl={updateChatUrl}
+      user={user}
+      {...props}
+      activeConversationId={props.activeConversation?.id?.toString()}
+      chatMessages={chatMessages}
+      dispatch={dispatch}
+    />
   );
 };
 
@@ -68,82 +120,23 @@ class Chats extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      socket: null,
       searchChat: "",
       recentChatList: this.props.conversations,
-      upsenseChatList: [],
     };
     this.openUserChat = this.openUserChat.bind(this);
     this.handleChange = this.handleChange.bind(this);
   }
 
   componentDidMount() {
-    this.props.fetchConversations();
-
-    const { socket } = this.props;
-
-    if (socket) {
-      this.handleConnect = () => console.log("Connected to server");
-      this.handleNewMessage = (message) => {
-        console.log("New message received", message);
-      };
-
-      socket.on("connect", this.handleConnect);
-      socket.on("new_message", this.handleNewMessage);
-    }
-  }
-  handleNewMessage = (message) => {
-    this.setState((prevState) => ({
-      recentChatList: [...prevState.recentChatList, message],
-    }));
-  };
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.conversations !== this.props.conversations) {
-      this.setState({
-        recentChatList: this.props.conversations,
-      });
-    }
-  }
-
-  componentWillUnmount() {
-    const { socket } = this.props;
-
-    if (socket) {
-      socket.off("connect", this.handleConnect);
-      socket.off("new_message", this.handleNewMessage);
-    }
-  }
-
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    if (this.props.recentChatList !== nextProps.recentChatList) {
-      this.setState({
-        recentChatList: nextProps.recentChatList,
-      });
-    }
+    const { fetchConversations } = this.props;
+    fetchConversations();
   }
 
   handleChange(e) {
-    const search = e.target.value.toLowerCase();
     this.setState({ searchChat: e.target.value });
-
-    const conversations = this.props.conversations || [];
-
-    if (search === "") {
-      this.setState({ recentChatList: conversations });
-      return;
-    }
-
-    const filteredArray = conversations.filter((conv) =>
-      conv?.contact_name?.toLowerCase()?.includes(search)
-    );
-
-    this.setState({ recentChatList: filteredArray });
   }
 
   openUserChat(e, chat) {
-    console.log("chat", chat);
-
     e.preventDefault();
 
     if (!chat?.last_message) {
@@ -196,13 +189,18 @@ class Chats extends Component {
 
   render() {
     const { conversations, user } = this.props;
-    let filteredConversations = this.state.recentChatList.filter(
-      (conversation) => {
-        if (user?.role_id === ROLES.User) {
-          return conversation?.assigned_user_id === user?.id;
-        } else return true;
-      }
-    );
+    const search = this.state.searchChat.toLowerCase();
+
+    let filteredConversations = conversations.filter((conversation) => {
+      const matchesSearch = conversation?.contact_name
+        ?.toLowerCase()
+        ?.includes(search);
+      const matchesRole =
+        user?.role_id === ROLES.User
+          ? conversation?.assigned_user_id === user?.id
+          : true;
+      return matchesSearch && matchesRole;
+    });
 
     return (
       <React.Fragment>
@@ -319,10 +317,11 @@ class Chats extends Component {
                                 {chat?.last_message &&
                                 chat?.last_message?.length > 20
                                   ? chat?.last_message?.substring(0, 30) + "..."
-                                  : chat?.last_message}
+                                  : chat?.last_message}{" "}
                               </div>
                             )}
                           </p>
+
                           {/* Middle Bottom Part  - Platform Card*/}
                           <p className="chat-user-message font-size-14 text-truncate mb-0 ms-3">
                             {
@@ -390,7 +389,11 @@ class Chats extends Component {
 const mapStateToProps = (state) => {
   const { activeConversation, conversations, activeConversationId } =
     state.Chat;
-  return { activeConversation, conversations, activeConversationId };
+  return {
+    activeConversation,
+    conversations,
+    activeConversationId: String(activeConversationId),
+  };
 };
 
 export default connect(mapStateToProps, {
@@ -412,7 +415,7 @@ ChatsWrapper.propTypes = {
   conversations: PropTypes.array,
   setActiveConversationId: PropTypes.func,
   setActiveConversation: PropTypes.func,
-  activeConversationId: PropTypes.string,
+  activeConversationId: PropTypes.string.isRequired,
   setChatMessages: PropTypes.func.isRequired,
 };
 
@@ -423,4 +426,5 @@ Chats.propTypes = {
   setActiveConversationId: PropTypes.func.isRequired,
   setActiveConversation: PropTypes.func.isRequired,
   setChatMessages: PropTypes.func.isRequired,
+  activeConversationId: PropTypes.string,
 };
