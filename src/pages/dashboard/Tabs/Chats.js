@@ -182,7 +182,6 @@ class Chats extends Component {
     e.preventDefault();
 
     if (chat?.unread_count > 0 && chat.last_message_id) {
-      console.log("girrrdi");
       try {
         await this.markConversationAsRead(apiUrl, chatId);
       } catch (err) {
