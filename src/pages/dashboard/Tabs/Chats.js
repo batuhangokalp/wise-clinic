@@ -27,10 +27,13 @@ import {
 } from "../../../redux/actions";
 import { ROLES } from "../../../redux/role/constants";
 import { io } from "socket.io-client";
+import axios from "axios";
 
 // Create a wrapper functional component
 const ChatsWrapper = (props) => {
   const SOCKET_SERVER_URL = `${process.env.REACT_APP_SOCKET_SERVER_URL}`;
+  const API_URL = `${process.env.REACT_APP_API_URL}`;
+
   const chatMessages = useSelector((state) => state.Chat.chatMessages);
   const dispatch = useDispatch();
   const [socket, setSocket] = useState(null);
@@ -62,37 +65,43 @@ const ChatsWrapper = (props) => {
 
   useEffect(() => {
     if (!socket || !props.activeConversation?.id) return;
-  
+
     const currentId = props.activeConversation.id;
-  
+
     const availableConversation = props.conversations?.find(
       (conv) => conv.id === currentId
     );
-  
-    props.fetchMessagesByConversationId(props.activeConversation);
-  
+
+    if (props.activeConversation?.last_message_id !== null) {
+      props.fetchMessagesByConversationId(props.activeConversation);
+    }
     if (currentId && !availableConversation) {
       props.setActiveConversation(null);
       props.setActiveConversationId(null);
     }
-  
-    if (currentId && currentId !== prevIdRef.current) {
+
+    if (
+      currentId &&
+      currentId !== prevIdRef.current &&
+      props?.activeConversation?.last_message_id !== null
+    ) {
       prevIdRef.current = currentId;
       props.fetchMessagesByConversationId(props.activeConversation);
     }
-  
+
     const handleNewMessage = (message) => {
-      console.log("Yeni mesaj geldi:", message);
-  
-      if (message.conversation_id === props.activeConversation?.id) {
+      if (
+        message.conversation_id === props?.activeConversation?.id &&
+        props.activeConversation.last_message_id !== null
+      ) {
         dispatch(fetchMessagesByConversationId(props.activeConversation));
       }
-  
+
       dispatch(fetchConversations());
     };
-  
+
     socket.on("new_message", handleNewMessage);
-  
+
     return () => {
       socket.off("new_message", handleNewMessage);
     };
@@ -102,7 +111,6 @@ const ChatsWrapper = (props) => {
     props.activeConversation?.id,
     props.activeConversation?.last_message_id,
   ]);
-  
 
   return (
     <Chats
@@ -112,6 +120,7 @@ const ChatsWrapper = (props) => {
       activeConversationId={props.activeConversation?.id?.toString()}
       chatMessages={chatMessages}
       dispatch={dispatch}
+      API_URL={API_URL}
     />
   );
 };
@@ -136,33 +145,72 @@ class Chats extends Component {
     this.setState({ searchChat: e.target.value });
   }
 
-  openUserChat(e, chat) {
+  markConversationAsRead = async (apiUrl, chatId) => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/api/messages/conversation/${chatId}/mark-as-read`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! status: ${response.status}, body: ${errorText}`
+        );
+      }
+
+      const data = await response.json();
+      // console.log("✔️ Sohbet okunma durumu güncellendi:", data);
+      return data;
+    } catch (error) {
+      // console.error("❌ Okunma durumu güncellenirken hata:", error);
+      throw error;
+    }
+  };
+
+  async openUserChat(e, chat) {
+    const apiUrl = this.props.API_URL;
+    const chatId = chat?.id;
+
     e.preventDefault();
+
+    if (chat?.unread_count > 0 && chat.last_message_id) {
+      console.log("girrrdi");
+      try {
+        await this.markConversationAsRead(apiUrl, chatId);
+      } catch (err) {
+        // hata zaten üstte loglanıyor
+      }
+    }
 
     if (!chat?.last_message) {
       this.props.setChatMessages([]);
     }
 
-    // Update URL with the clicked chat's ID
-    this.props.updateChatUrl(chat?.id);
+    this.props.updateChatUrl(chatId);
     this.props.setconversationNameInOpenChat(chat?.contact_name);
     this.props.setActiveConversation(chat);
-    this.props.setActiveConversationId(chat?.id);
+    this.props.setActiveConversationId(chatId);
 
-    var chatList = document.getElementById("chat-list");
-    var clickedItem = e.target;
-    var currentli = null;
+    const chatList = document.getElementById("chat-list");
+    const clickedItem = e.target;
+    let currentli = null;
 
     if (chatList) {
-      var li = chatList.getElementsByTagName("li");
-      //remove coversation user
-      for (var i = 0; i < li.length; ++i) {
-        if (li[i].classList.contains("active")) {
-          li[i].classList.remove("active");
-        }
+      const li = chatList.getElementsByTagName("li");
+
+      for (let i = 0; i < li.length; ++i) {
+        li[i].classList.remove("active");
       }
-      //find clicked coversation user
-      for (var k = 0; k < li.length; ++k) {
+
+      for (let k = 0; k < li.length; ++k) {
         if (li[k].contains(clickedItem)) {
           currentli = li[k];
           break;
@@ -170,18 +218,16 @@ class Chats extends Component {
       }
     }
 
-    //activation of clicked coversation user
     if (currentli) {
       currentli.classList.add("active");
     }
 
-    var userChat = document.getElementsByClassName("user-chat");
-    if (userChat) {
+    const userChat = document.getElementsByClassName("user-chat");
+    if (userChat.length > 0) {
       userChat[0].classList.add("user-chat-show");
     }
 
-    //removes unread badge if user clicks
-    var unread = document.getElementById("unRead" + chat?.id);
+    const unread = document.getElementById("unRead" + chatId);
     if (unread) {
       unread.style.display = "none";
     }
@@ -368,7 +414,9 @@ class Chats extends Component {
                             id={"unRead" + chat?.id}
                           >
                             <span className="badge badge-soft-success rounded-pill">
-                              {chat?.last_message ? chat?.unRead : ""}
+                              {chat?.last_message && chat?.unread_count > 0
+                                ? chat?.unread_count
+                                : ""}
                             </span>
                           </div>
                         )}

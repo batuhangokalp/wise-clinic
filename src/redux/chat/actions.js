@@ -246,8 +246,7 @@ export const fetchConversations = (limit = 10, page = 1) => {
             })
             const data = await response.json()
             let sortedData = data?.data.sort((a, b) => new Date(b?.updated_at) - new Date(a?.updated_at))
-            let result = sortedData.map((conversation) => { conversation['unRead'] = 1; return conversation })
-            dispatch(fetchConversationsSuccess(result))
+            dispatch(fetchConversationsSuccess(sortedData))
         } catch (error) {
             dispatch(fetchConversationsFailure(error.message))
         }

@@ -272,29 +272,34 @@ function UserChat(props) {
         // Fetch messages with a slight delay
         setTimeout(() => {
           dispatch(setChatMessagesPage(nextPage));
-          dispatch(
-            fetchMessagesByConversationId(
-              props.activeConversation,
-              chatMessagesLimit,
-              nextPage,
-              true
-            )
-          )
-            .then(() => {
-              // Restore relative scroll position smoothly
-              const newScrollHeight = scrollableElement.scrollHeight;
-              const heightDifference = newScrollHeight - currentScrollHeight;
 
-              // Add smooth scrolling with slight delay
-              setTimeout(() => {
-                scrollableElement.scrollTo({
-                  top: heightDifference,
-                  behavior: "smooth",
-                });
-              }, 200); // Delay for smoother experience
-            })
-            .finally(() => setLoadingOlderMessages(false)); // Reset loading flag
-        }, 100); // Artificial delay before fetching
+          const lastMessageId = props.activeConversation?.last_message_id;
+
+          if (lastMessageId) {
+            dispatch(
+              fetchMessagesByConversationId(
+                props.activeConversation,
+                chatMessagesLimit,
+                nextPage,
+                true
+              )
+            )
+              .then(() => {
+                const newScrollHeight = scrollableElement.scrollHeight;
+                const heightDifference = newScrollHeight - currentScrollHeight;
+
+                setTimeout(() => {
+                  scrollableElement.scrollTo({
+                    top: heightDifference,
+                    behavior: "smooth",
+                  });
+                }, 200);
+              })
+              .finally(() => setLoadingOlderMessages(false));
+          } else {
+            setLoadingOlderMessages(false);
+          }
+        }, 100);
       }
     }
   }, 300); // Throttle interval to prevent rapid triggering
