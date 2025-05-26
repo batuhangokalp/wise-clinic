@@ -69,17 +69,27 @@ const TemplatePicker = (props) => {
     }
   }, [cannedResponses]);
 
-  const filteredTemplates = templates?.filter(
-    (template) =>
-      template?.vertical?.toLowerCase().includes(searchQuery?.toLowerCase()) &&
-      (selectedTag === "All" || template?.category.includes(selectedTag))
-  );
+  const filteredTemplates = templates?.filter((template) => {
+    const query = searchQuery?.toLowerCase() || "";
+    const verticalMatch = template?.vertical?.toLowerCase().includes(query);
+    const contentMatch = template?.content?.toLowerCase().includes(query);
 
-  const filteredCannedResponses = cannedResponses?.filter(
-    (template) =>
-      template?.name?.toLowerCase().includes(searchQuery?.toLowerCase()) &&
-      (selectedTag === "All" || template?.tags.includes(selectedTag))
-  );
+    const tagMatch =
+      selectedTag === "All" || template?.category.includes(selectedTag);
+
+    return (verticalMatch || contentMatch) && tagMatch;
+  });
+
+  const filteredCannedResponses = cannedResponses?.filter((cannedResponse) => {
+    const query = searchQuery?.toLowerCase() || "";
+    const nameMatch = cannedResponse?.name?.toLowerCase().includes(query);
+    const contentMatch = cannedResponse?.content?.toLowerCase().includes(query);
+
+    const tagMatch =
+      selectedTag === "All" || cannedResponse?.content.includes(selectedTag);
+
+    return (nameMatch || contentMatch) && tagMatch;
+  });
 
   return (
     <div className="template-list-container">
@@ -149,7 +159,7 @@ const TemplatePicker = (props) => {
           <Input
             className="form-control bg-light border-light w-auto"
             type="text"
-            placeholder="Search templates..."
+            placeholder="Search canned response..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -180,8 +190,8 @@ const TemplatePicker = (props) => {
         <TabPane tabId="1">
           <Row>
             <Col sm="12">
-              {filteredTemplates?.length <= 0 && loading && <p>Loading...</p>}
-              {filteredTemplates?.length <= 0 && error && <p>Error: {error}</p>}
+              {filteredTemplates?.length <= 0 && loading && <div>Loading...</div>}
+              {filteredTemplates?.length <= 0 && error && <div>Error: {error}</div>}
               {filteredTemplates?.map((template, index) => (
                 <div
                   key={index}
@@ -198,7 +208,7 @@ const TemplatePicker = (props) => {
                       </span>
                       <br />
                       <span className="template-text">
-                        {template?.data?.substring(0, 50) + "..."}
+                        {template?.content?.substring(0, 50) + "..."}
                       </span>
                     </div>
                     <hr />
@@ -211,10 +221,18 @@ const TemplatePicker = (props) => {
         <TabPane tabId="2">
           <Row>
             <Col sm="12">
-              {cannedResponses?.map((template, index) => (
+              {filteredCannedResponses?.length <= 0 && loading && (
+                <div>Loading...</div>
+              )}
+              {filteredCannedResponses?.length <= 0 && error && (
+                <div>Error: {error}</div>
+              )}
+              {filteredCannedResponses?.map((cannedResponse, index) => (
                 <div
                   key={index}
-                  onClick={(e) => handleTemplateSelect(e, template, activeTab)}
+                  onClick={(e) =>
+                    handleTemplateSelect(e, cannedResponse, activeTab)
+                  }
                 >
                   <div style={{ display: "block" }}>
                     <div className="template-list">
@@ -223,11 +241,11 @@ const TemplatePicker = (props) => {
                           className="ri-whatsapp-fill text-success template-platform"
                           aria-hidden="true"
                         ></i>
-                        <b>{template?.name}</b>
+                        <b>{cannedResponse?.name}</b>
                       </span>
                       <br />
                       <span className="template-text">
-                        {template?.content?.substring(0, 50) + "..."}
+                        {cannedResponse?.content?.substring(0, 50) + "..."}
                       </span>
                     </div>
                     <hr />

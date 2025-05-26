@@ -76,7 +76,7 @@ export default function CannedResponseCard(props) {
   }, [dispatch]);
 
   useEffect(() => {
-    const filteredData = cannedResponses.filter((cannedResponse) =>
+    const filteredData = cannedResponses?.filter((cannedResponse) =>
       columns.some((column) => {
         const value = cannedResponse[column.accessor];
         // Ensure both value and search term are treated as strings for comparison
@@ -202,36 +202,45 @@ export default function CannedResponseCard(props) {
                 {...getTableProps()}
               >
                 <thead>
-                  {headerGroups?.map((headerGroup) => (
-                    <tr
-                      key={headerGroup.id}
-                      {...headerGroup.getHeaderGroupProps()}
-                    >
-                      {headerGroup?.headers?.map((column) => (
-                        <th key={column.id} {...column.getHeaderProps()}>
-                          {column.render("Header")}
-                        </th>
-                      ))}
-                      <th>{props.t("Actions")}</th>
-                    </tr>
-                  ))}
+                  {headerGroups?.map((headerGroup) => {
+                    const { key: headerKey, ...headerProps } =
+                      headerGroup.getHeaderGroupProps();
+                    return (
+                      <tr key={headerKey} {...headerProps}>
+                        {headerGroup.headers?.map((column) => {
+                          const { key: colKey, ...colProps } =
+                            column.getHeaderProps();
+                          return (
+                            <th key={colKey} {...colProps}>
+                              {column.render("Header")}
+                            </th>
+                          );
+                        })}
+                        <th>{props.t("Actions")}</th>
+                      </tr>
+                    );
+                  })}
                 </thead>
                 <tbody {...getTableBodyProps()}>
                   {page?.map((row) => {
                     prepareRow(row);
+                    const { key: rowKey, ...rowProps } = row.getRowProps();
                     return (
-                      <tr key={row.id} {...row.getRowProps()}>
-                        {row?.cells?.map((cell) => (
-                          <td
-                            key={cell.column.id}
-                            className="text-break"
-                            {...cell.getCellProps()}
-                          >
-                            {cell.render("Cell")}
-                          </td>
-                        ))}
+                      <tr key={rowKey} {...rowProps}>
+                        {row?.cells?.map((cell) => {
+                          const { key: cellKey, ...cellProps } =
+                            cell.getCellProps();
+                          return (
+                            <td
+                              key={cellKey}
+                              className="text-break"
+                              {...cellProps}
+                            >
+                              {cell.render("Cell")}
+                            </td>
+                          );
+                        })}
                         <td>
-                          {/* button group for edit and delete */}
                           <div className="btn-group">
                             <button
                               className="btn btn-primary"

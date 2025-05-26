@@ -5,129 +5,108 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   fetchRoles,
   createRole,
-  apiRoleError,
-  apiRoleSuccess,
   updateRole,
   deleteRole,
+  apiRoleError,
+  apiRoleSuccess,
 } from "../redux/actions";
 import CreateRoleModal from "./CreateRoleModal";
 import UpdateRoleModal from "./UpdateRoleModal";
 import * as Yup from "yup";
 import Swal from "sweetalert2";
 
+// Table column definitions
 const columns = [
-  {
-    Header: "ID",
-    accessor: "id", // accessor is the "key" in the data
-  },
-  {
-    Header: "Role",
-    accessor: "role_name",
-  },
-  {
-    Header: "Description",
-    accessor: "role_description",
-  },
+  { Header: "ID", accessor: "id" },
+  { Header: "Role", accessor: "role_name" },
+  { Header: "Description", accessor: "role_description" },
 ];
 
-export default function RolesCard(props) {
+export default function RolesCard({ t }) {
   const dispatch = useDispatch();
-  const roles = useSelector((state) => state.Role.roles); // Original data
-
-  const userInfo =
-    localStorage.getItem("authUser") &&
-    JSON.parse(localStorage.getItem("authUser"));
-
-  // State for search input
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredRoles, setFilteredRoles] = useState(roles);
-  const [createRoleModal, setCreateRoleModal] = useState(false);
-  const [updateRoleModal, setUpdateRoleModal] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null);
+  const roles = useSelector((state) => state.Role.roles);
   const roleError = useSelector((state) => state.Role.roleError);
   const roleSuccess = useSelector((state) => state.Role.roleSuccess);
 
-  const createValidationSchema = Yup.object().shape({
-    role_name: Yup.string().required(props.t("Role name is required")),
-    role_description: Yup.string().required(props.t("Description is required")),
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredRoles, setFilteredRoles] = useState([]);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
+
+  // Validation schemas
+  const validationSchema = Yup.object({
+    role_name: Yup.string().required(t("Role name is required")),
+    role_description: Yup.string().required(t("Description is required")),
   });
 
-  const updateValidationSchema = Yup.object().shape({
-    role_name: Yup.string().required(props.t("Role name is required")),
-    role_description: Yup.string().required(props.t("Description is required")),
-  });
-
+  // Fetch roles on mount
   useEffect(() => {
     dispatch(fetchRoles());
   }, [dispatch]);
 
+  // Filter roles by search term
   useEffect(() => {
-    const filteredData = roles.filter((role) =>
-      columns.some((column) => {
-        const value = role[column.accessor];
-        // Ensure both value and search term are treated as strings for comparison
-        return (
-          value !== undefined &&
-          value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      })
+    setFilteredRoles(
+      roles.filter((role) =>
+        columns.some((col) => {
+          const value = role[col.accessor];
+          return value
+            ?.toString()
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase());
+        })
+      )
     );
-    setFilteredRoles(filteredData);
-  }, [searchTerm, roles]);
+  }, [roles, searchTerm]);
 
   const tableInstance = useTable({ columns, data: filteredRoles });
-
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
 
+  const resetMessages = () => {
+    dispatch(apiRoleError(null));
+    dispatch(apiRoleSuccess(null));
+  };
+
   const handleCreateSubmit = async (values) => {
-    await dispatch(createRole(values)).then((response) => {
-      if (response) {
-        setTimeout(async () => {
-          setCreateRoleModal(false);
-          dispatch(fetchRoles());
-          dispatch(apiRoleError(null));
-          dispatch(apiRoleSuccess(null));
-        }, 3000);
-      }
-    });
+    const res = await dispatch(createRole(values));
+    if (res) {
+      setTimeout(() => {
+        setCreateModalOpen(false);
+        dispatch(fetchRoles());
+        resetMessages();
+      }, 3000);
+    }
   };
 
   const handleUpdateSubmit = async (values) => {
-    await dispatch(updateRole(values)).then((response) => {
-      if (response) {
-        setTimeout(async () => {
-          setUpdateRoleModal(false);
-          dispatch(fetchRoles());
-          dispatch(apiRoleError(null));
-          dispatch(apiRoleSuccess(null));
-        }, 3000);
-      }
-    });
+    const res = await dispatch(updateRole(values));
+    if (res) {
+      setTimeout(() => {
+        setUpdateModalOpen(false);
+        dispatch(fetchRoles());
+        resetMessages();
+      }, 3000);
+    }
   };
 
-  const handleDelete = async (e, id) => {
+  const handleDelete = (e, id) => {
     e.preventDefault();
 
-    // Display confirmation dialog
     Swal.fire({
-      title: props.t("Are you sure?"),
-      text: props.t("You will not be able to recover this role!"),
+      title: t("Are you sure?"),
+      text: t("You will not be able to recover this role!"),
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: props.t("Yes, delete it!"),
-      cancelButtonText: props.t("No, keep it"),
+      confirmButtonText: t("Yes, delete it!"),
+      cancelButtonText: t("No, keep it"),
     }).then(async (result) => {
       if (result.isConfirmed) {
-        try {
-          const response = await dispatch(deleteRole(id));
-          if (response) {
-            dispatch(fetchRoles());
-            dispatch(apiRoleError(null));
-            dispatch(apiRoleSuccess(null));
-          }
-        } catch (error) {
-          console.error("Error deleting role:", error);
+        const res = await dispatch(deleteRole(id));
+        if (res) {
+          dispatch(fetchRoles());
+          resetMessages();
         }
       }
     });
@@ -135,140 +114,128 @@ export default function RolesCard(props) {
 
   return (
     <div className="d-flex justify-content-center">
-      <>
-        <Col xxl={1}></Col>
-        <Col xs={12} xl={12} xxl={12} className="container mt-4 ms-4">
-          <div className="card shadow-sm">
-            <div className="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">{props.t("Roles")}</h5>
-              <div className="d-flex flex-wrap gap-2 w-50">
-                <input
-                  placeholder={props.t("Search Roles")}
-                  type="text"
-                  className="form-control"
-                  id="role"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="d-flex flex-wrap gap-2">
-                <button
-                  className="btn btn-outline-primary"
-                  onClick={() => {
-                    dispatch(apiRoleError(null));
-                    dispatch(apiRoleSuccess(null));
-                    setCreateRoleModal(true);
-                  }}
-                >
-                  {props.t("Create Role")}
-                </button>
-              </div>
+      <Col xxl={1}></Col>
+
+      <Col xs={12} xl={12} xxl={12} className="container mt-4 ms-4">
+        <div className="card shadow-sm">
+          <div className="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 className="mb-0">{t("Roles")}</h5>
+
+            <div className="d-flex flex-wrap gap-2 w-50">
+              <input
+                type="text"
+                placeholder={t("Search Roles")}
+                className="form-control"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            <div className="card-body">
-              <div className="mb-4">
-                {/* Roles Table Section */}
-                <table
-                  className="table border border-2 table-bordered text-center"
-                  {...getTableProps()}
-                >
-                  <thead>
-                    {headerGroups?.map((headerGroup) => (
-                      <tr
-                        key={headerGroup.id}
-                        {...headerGroup.getHeaderGroupProps()}
-                      >
-                        {headerGroup.headers?.map((column) => (
-                          <th key={column.id} {...column.getHeaderProps()}>
+
+            <button
+              className="btn btn-outline-primary"
+              onClick={() => {
+                resetMessages();
+                setCreateModalOpen(true);
+              }}
+            >
+              {t("Create Role")}
+            </button>
+          </div>
+
+          <div className="card-body">
+            <table
+              {...getTableProps()}
+              className="table border border-2 table-bordered text-center"
+            >
+              <thead>
+                {headerGroups?.map((headerGroup) => {
+                  const { key, ...rest } = headerGroup.getHeaderGroupProps();
+                  return (
+                    <tr key={key} {...rest}>
+                      {headerGroup.headers?.map((column) => {
+                        const { key: colKey, ...colProps } =
+                          column.getHeaderProps();
+                        return (
+                          <th key={colKey} {...colProps}>
                             {column.render("Header")}
                           </th>
-                        ))}
-                        <th>{props.t("Actions")}</th>
-                      </tr>
-                    ))}
-                  </thead>
-                  <tbody {...getTableBodyProps()}>
-                    {rows?.map((row) => {
-                      prepareRow(row);
-                      return (
-                        <tr key={row.id} {...row.getRowProps()}>
-                          {row?.cells?.map((cell) => (
-                            <td
-                              key={cell.column.id}
-                              className="text-break"
-                              {...cell.getCellProps()}
-                            >
-                              {cell.render("Cell")}
-                            </td>
-                          ))}
-                          <td>
-                            {/* button group for edit and delete */}
-                            <div className="btn-group">
-                              {/*<button className="btn btn-dark">
-                                                                {t('Users')}
-                                                            </button>*/}
-                              <button
-                                className="btn btn-primary"
-                                onClick={() => {
-                                  setSelectedRole(row.original);
-                                  dispatch(apiRoleError(null));
-                                  dispatch(apiRoleSuccess(null));
-                                  setUpdateRoleModal(true);
-                                }}
-                              >
-                                {props.t("Edit")}
-                              </button>
-                              <button
-                                className="btn btn-secondary"
-                                onClick={(e) => {
-                                  handleDelete(e, row.original.id);
-                                }}
-                              >
-                                {props.t("Delete")}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                        );
+                      })}
+                      <th>{t("Actions")}</th>
+                    </tr>
+                  );
+                })}
+              </thead>
+
+              <tbody {...getTableBodyProps()}>
+                {rows.map((row) => {
+                  prepareRow(row);
+                  return (
+                    <tr {...row.getRowProps()} key={row.id}>
+                      {row.cells.map((cell) => (
+                        <td
+                          {...cell.getCellProps()}
+                          className="text-break"
+                          key={cell.column.id}
+                        >
+                          {cell.render("Cell")}
+                        </td>
+                      ))}
+                      <td>
+                        <div className="btn-group">
+                          <button
+                            className="btn btn-primary"
+                            onClick={() => {
+                              setSelectedRole(row.original);
+                              resetMessages();
+                              setUpdateModalOpen(true);
+                            }}
+                          >
+                            {t("Edit")}
+                          </button>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={(e) => handleDelete(e, row.original.id)}
+                          >
+                            {t("Delete")}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        </Col>
-        <Col xxl={1}></Col>
-        <CreateRoleModal
-          modal={createRoleModal}
-          toggleModal={() => {
-            setCreateRoleModal(!createRoleModal);
-            dispatch(apiRoleError(null));
-            dispatch(apiRoleSuccess(null));
-          }}
-          parentProps={{
-            t: props.t,
-            error: roleError,
-            success: roleSuccess,
-          }}
-          validationSchema={createValidationSchema}
-          handleSubmit={handleCreateSubmit}
-        />
-        <UpdateRoleModal
-          modal={updateRoleModal}
-          toggleModal={() => {
-            setUpdateRoleModal(!updateRoleModal);
-            dispatch(apiRoleError(null));
-            dispatch(apiRoleSuccess(null));
-          }}
-          parentProps={{
-            t: props.t,
-            error: roleError,
-            success: roleSuccess,
-          }}
-          validationSchema={updateValidationSchema}
-          handleSubmit={handleUpdateSubmit}
-          selectedRole={selectedRole}
-        />
-      </>
+        </div>
+      </Col>
+
+      <Col xxl={1}></Col>
+
+      {/* Create Modal */}
+      <CreateRoleModal
+        modal={createModalOpen}
+        toggleModal={() => {
+          setCreateModalOpen(!createModalOpen);
+          resetMessages();
+        }}
+        parentProps={{ t, error: roleError, success: roleSuccess }}
+        validationSchema={validationSchema}
+        handleSubmit={handleCreateSubmit}
+      />
+
+      {/* Update Modal */}
+      <UpdateRoleModal
+        modal={updateModalOpen}
+        toggleModal={() => {
+          setUpdateModalOpen(!updateModalOpen);
+          resetMessages();
+        }}
+        parentProps={{ t, error: roleError, success: roleSuccess }}
+        validationSchema={validationSchema}
+        handleSubmit={handleUpdateSubmit}
+        selectedRole={selectedRole}
+      />
     </div>
   );
 }

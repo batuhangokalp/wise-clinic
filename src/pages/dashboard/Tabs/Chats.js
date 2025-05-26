@@ -339,69 +339,57 @@ class Chats extends Component {
                           <h5 className="text-truncate font-size-15 mb-1 ms-3">
                             {chat?.contact_name}
                           </h5>
-                          <p className="chat-user-message font-size-14 text-truncate mb-0 ms-3">
-                            {chat?.isTyping ? (
-                              <>
-                                typing
-                                <span className="animate-typing">
-                                  <span className="dot ms-1"></span>
-                                  <span className="dot ms-1"></span>
-                                  <span className="dot ms-1"></span>
-                                </span>
-                              </>
-                            ) : (
-                              <div>
-                                {chat?.last_message &&
-                                chat?.message_type_id === MessageType.Image ? (
-                                  <i className="ri-image-fill align-middle me-1"></i>
-                                ) : null}
-                                {chat?.last_message &&
-                                chat?.message_type_id === MessageType.File ? (
-                                  <i className="ri-file-text-fill align-middle me-1"></i>
-                                ) : null}
-                                {chat?.last_message &&
-                                chat?.last_message?.length > 20
-                                  ? chat?.last_message?.substring(0, 30) + "..."
-                                  : chat?.last_message}{" "}
-                              </div>
-                            )}
-                          </p>
 
-                          {/* Middle Bottom Part  - Platform Card*/}
-                          <p className="chat-user-message font-size-14 text-truncate mb-0 ms-3">
-                            {
-                              <>
-                                {chat?.message_channel_id &&
-                                chat?.message_channel_id ===
-                                  ChatPlatform.Whatsapp ? (
-                                  <span>
-                                    <i className="ri-whatsapp-fill align-middle me-1 text-success"></i>
-                                    {
-                                      ChatPlatformConverter[
-                                        ChatPlatform.Whatsapp
-                                      ]
-                                    }
-                                  </span>
-                                ) : null}
-                                {chat?.message_channel_id &&
-                                chat?.message_channel_id ===
-                                  ChatPlatform.Facebook ? (
-                                  <span>
-                                    <i className="ri-messenger-fill align-middle me-1 text-info"></i>
-                                    {ChatPlatform.Facebook}
-                                  </span>
-                                ) : null}
-                                {chat?.message_channel_id &&
-                                chat?.message_channel_id ===
-                                  ChatPlatform.Instagram ? (
-                                  <span>
-                                    <i className="ri-instagram-fill align-middle me-1 text-dark"></i>
-                                    {ChatPlatform.Instagram}
-                                  </span>
-                                ) : null}
-                              </>
-                            }
-                          </p>
+                          {chat?.isTyping ? (
+                            <p className="chat-user-message font-size-14 text-truncate mb-0 ms-3">
+                              typing
+                              <span className="animate-typing">
+                                <span className="dot ms-1"></span>
+                                <span className="dot ms-1"></span>
+                                <span className="dot ms-1"></span>
+                              </span>
+                            </p>
+                          ) : (
+                            <div className="chat-user-message font-size-14 text-truncate mb-0 ms-3">
+                              {chat?.last_message &&
+                                chat?.message_type_id === MessageType.Image && (
+                                  <i className="ri-image-fill align-middle me-1"></i>
+                                )}
+                              {chat?.last_message &&
+                                chat?.message_type_id === MessageType.File && (
+                                  <i className="ri-file-text-fill align-middle me-1"></i>
+                                )}
+                              {chat?.last_message &&
+                                (chat?.last_message?.length > 20
+                                  ? chat?.last_message?.substring(0, 30) + "..."
+                                  : chat?.last_message)}
+                            </div>
+                          )}
+
+                          {/* Middle Bottom Part - Platform Card */}
+                          <div className="chat-user-message font-size-14 text-truncate mb-0 ms-3">
+                            {chat?.message_channel_id ===
+                              ChatPlatform.Whatsapp && (
+                              <span>
+                                <i className="ri-whatsapp-fill align-middle me-1 text-success"></i>
+                                {ChatPlatformConverter[ChatPlatform.Whatsapp]}
+                              </span>
+                            )}
+                            {chat?.message_channel_id ===
+                              ChatPlatform.Facebook && (
+                              <span>
+                                <i className="ri-messenger-fill align-middle me-1 text-info"></i>
+                                {ChatPlatform.Facebook}
+                              </span>
+                            )}
+                            {chat?.message_channel_id ===
+                              ChatPlatform.Instagram && (
+                              <span>
+                                <i className="ri-instagram-fill align-middle me-1 text-dark"></i>
+                                {ChatPlatform.Instagram}
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         <div className="font-size-11">
