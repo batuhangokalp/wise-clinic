@@ -41,6 +41,7 @@ const TemplatePicker = (props) => {
   const handleTabChange = (tab) => {
     if (activeTab !== tab) {
       setActiveTab(tab);
+      setSelectedTag("All");
     }
   };
 
@@ -62,7 +63,7 @@ const TemplatePicker = (props) => {
   useEffect(() => {
     if (cannedResponses?.length > 0) {
       let tags = new Set(
-        cannedResponses.map((template) => template?.tags).flat()
+        cannedResponses.map((template) => template?.language_name).flat()
       );
       tags.add("All");
       setCannedTags(Array.from(tags));
@@ -131,7 +132,7 @@ const TemplatePicker = (props) => {
       )}
       {activeTab === "2" && (
         <div className="template-list-header">
-          {tags?.length > 0 && (
+          {cannedTags?.length > 0 && (
             <Dropdown
               group
               isOpen={isTagsOpen}
@@ -141,13 +142,13 @@ const TemplatePicker = (props) => {
             >
               <DropdownToggle caret>Tags</DropdownToggle>
               <DropdownMenu>
-                {tags && tags.length > 0 ? (
-                  tags.map((tag, index) => (
+                {cannedTags && cannedTags.length > 0 ? (
+                  cannedTags.map((cannedTag, index) => (
                     <DropdownItem
                       key={index}
-                      onClick={() => setSelectedTag(tag)}
+                      onClick={() => setSelectedTag(cannedTag)}
                     >
-                      {tag}
+                      {cannedTag}
                     </DropdownItem>
                   ))
                 ) : (
@@ -190,8 +191,12 @@ const TemplatePicker = (props) => {
         <TabPane tabId="1">
           <Row>
             <Col sm="12">
-              {filteredTemplates?.length <= 0 && loading && <div>Loading...</div>}
-              {filteredTemplates?.length <= 0 && error && <div>Error: {error}</div>}
+              {filteredTemplates?.length <= 0 && loading && (
+                <div>Loading...</div>
+              )}
+              {filteredTemplates?.length <= 0 && error && (
+                <div>Error: {error}</div>
+              )}
               {filteredTemplates?.map((template, index) => (
                 <div
                   key={index}

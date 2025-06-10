@@ -111,12 +111,13 @@
         }
 
         .ctext-wrap-content {
-            padding: 20px 20px;
+            padding: 10px 80px 10px 15px;
             background-color: $chat-primary-bg;
             border-radius: 8px 8px 8px 0;
             color: $white;
             position: relative;
             display: flex;
+            
 
             &:before {
                 content: "";
@@ -158,13 +159,13 @@
 
         .chat-time {
             font-size: 11px;
-            margin-top: 20px;
+            margin-top: 10px;
             text-align: right;
             color: rgba($white, 0.5);
             margin-left: 15px;
             align-self: flex-end;
             position: absolute;
-            right: 30px;
+            right: 5px;
 
         }
 

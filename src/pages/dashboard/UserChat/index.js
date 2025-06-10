@@ -45,6 +45,7 @@ import { useTranslation } from "react-i18next";
 import RenderImage from "./RenderImage";
 import RenderAudio from "./RenderAudio";
 import RenderVideo from "./RenderVideo";
+import MessageStatus from "./MessageStatus";
 
 function UserChat(props) {
   const dispatch = useDispatch();
@@ -58,7 +59,7 @@ function UserChat(props) {
 
   //demo conversation messages
   //sender_type must be required
-  const chatMessages = useSelector((state) => state.Chat?.chatMessages) || [];
+  const chatMessages = useSelector((state) => state.Chat?.chatMessages);
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
@@ -125,7 +126,6 @@ function UserChat(props) {
           dispatch(setConversations(currentConversations));
         }
       };
-
       // Reset chatMessages when conversation changes
       socket.on("connect", handleConnect);
       socket.on("new_message", handleNewMessage);
@@ -143,6 +143,36 @@ function UserChat(props) {
       };
     }
   }, [socket, props.activeConversationId, props.conversations, chatMessages]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleMessageStatus = (data) => {
+      console.log("✅ Socket event: message-status", data);
+
+      if (data.eventType === "message-status") {
+        const { messageId, status } = data;
+        console.log("Gupshup ID:", messageId, "Status:", status);
+
+        if (!Array.isArray(chatMessages)) {
+          console.warn("chatMessages bir dizi değil:", chatMessages);
+          return;
+        }
+
+        const updatedMessages = chatMessages.map((msg) =>
+          msg.gupshup_message_id === messageId ? { ...msg, status } : msg
+        );
+
+        dispatch(setChatMessages(updatedMessages));
+      }
+    };
+
+    socket.on("message_event", handleMessageStatus);
+
+    return () => {
+      socket.off("message_event", handleMessageStatus);
+    };
+  }, [socket, dispatch, chatMessages]);
 
   const toggle = () => setModal(!modal);
   const user = useSelector((state) => state.User.user);
@@ -168,6 +198,7 @@ function UserChat(props) {
         }
       );
       const data = await response.json();
+      return data;
     } catch (error) {
       console.error("Error:", error);
     }
@@ -179,6 +210,11 @@ function UserChat(props) {
     let d = new Date();
     var n = d.getSeconds();
 
+    // Backend’den dönen mesajı bekle
+    const responseData = await sendMessage(message);
+    const backendMessage = responseData?.data;
+
+    console.log("backendMessage:", backendMessage);
     //matches the message type is text, file or image, and create object according to it
     switch (type) {
       case "textMessage":
@@ -188,6 +224,7 @@ function UserChat(props) {
           created_at: new Date(),
           sender_type: "user",
           file_type_id: null,
+          gupshup_message_id: backendMessage?.gupshup_message_id || null,
         };
         break;
 
@@ -225,8 +262,6 @@ function UserChat(props) {
       default:
         break;
     }
-
-    await sendMessage(message);
 
     //add message object to chat
     dispatch(setChatMessages([...chatMessages, messageObj]));
@@ -560,19 +595,27 @@ function UserChat(props) {
                           )
                         }
 
-                        <div className="user-chat-content">
+                        <div
+                          className="user-chat-content"
+                          style={{ position: "relative" }}
+                        >
                           <div className="ctext-wrap mb-3">
-                            <div className="ctext-wrap-content ">
+                            <div className="ctext-wrap-content">
                               {chat?.file_type_id === null && (
-                                <p className="mb-0">{chat?.message_content}</p>
+                                <p className="mb-0 d-flex">
+                                  {chat?.message_content}
+                                </p>
                               )}
+
                               {FileTypeId.Image?.includes(
                                 chat?.file_type_id
                               ) && <RenderImage url={chat?.file_path} />}
+
                               {chat?.file_type_id === FileTypeId.Document && (
                                 //file input component
                                 <FileList file={chat} />
                               )}
+
                               {chat?.file_type_id === FileTypeId.Video && (
                                 //file input component
                                 <RenderVideo url={chat?.file_path} />
@@ -597,12 +640,26 @@ function UserChat(props) {
                             {!chat?.isTyping && (
                               <>
                                 <br />
-                                <p className="chat-time mb-0">
-                                  <i className="ri-time-line align-middle"></i>{" "}
-                                  <span className="align-middle">
-                                    {showChatMessageTime(chat?.created_at)}
-                                  </span>
-                                </p>
+                                {chat?.sender_type === "user" ? (
+                                  <p
+                                    className="chat-time mb-0"
+                                    style={{ zIndex: 1 }}
+                                  >
+                                    <i className="ri-time-line align-middle"></i>{" "}
+                                    <span className="align-middle">
+                                      {showChatMessageTime(chat?.created_at)}
+
+                                      <MessageStatus status={chat?.status} />
+                                    </span>
+                                  </p>
+                                ) : (
+                                  <p className="chat-time mb-0" style={{position: "absolute", right: "25px"}}>
+                                    <i className="ri-time-line align-middle"></i>{" "}
+                                    <span className="align-middle">
+                                      {showChatMessageTime(chat?.created_at)}
+                                    </span>
+                                  </p>
+                                )}
                               </>
                             )}
                             {!chat?.isTyping && (

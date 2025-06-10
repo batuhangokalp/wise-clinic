@@ -379,14 +379,18 @@ class Chats extends Component {
                               ChatPlatform.Facebook && (
                               <span>
                                 <i className="ri-messenger-fill align-middle me-1 text-info"></i>
-                                {ChatPlatform.Facebook}
+                                {ChatPlatformConverter[ChatPlatform.Facebook]}
+
+                                {/* {ChatPlatform.Facebook} */}
                               </span>
                             )}
                             {chat?.message_channel_id ===
                               ChatPlatform.Instagram && (
                               <span>
                                 <i className="ri-instagram-fill align-middle me-1 text-dark"></i>
-                                {ChatPlatform.Instagram}
+                                {ChatPlatformConverter[ChatPlatform.Instagram]}
+
+                                {/* {ChatPlatform.Instagram} */}
                               </span>
                             )}
                           </div>

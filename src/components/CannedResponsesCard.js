@@ -42,6 +42,10 @@ const columns = [
       );
     },
   },
+  {
+    Header: "Language",
+    accessor: "language_name",
+  },
 ];
 
 export default function CannedResponseCard(props) {

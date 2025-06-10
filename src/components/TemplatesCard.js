@@ -265,7 +265,7 @@ export default function TemplatesCard(props) {
                             <button
                               className="btn btn-secondary"
                               onClick={(e) => {
-                                handleDelete(e, row.original.id);
+                                handleDelete(e, row.original.element_name);
                               }}
                             >
                               {props.t("Delete")}
