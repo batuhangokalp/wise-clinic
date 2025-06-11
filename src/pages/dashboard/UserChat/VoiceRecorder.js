@@ -12,7 +12,7 @@ function VoiceRecorder({ onAudioCapture }) {
 
     const startRecording = async () => {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorderRef.current = new MediaRecorder(stream);
+        mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/ogg' });
         audioChunksRef.current = [];
 
         mediaRecorderRef.current.ondataavailable = (event) => {
@@ -22,7 +22,7 @@ function VoiceRecorder({ onAudioCapture }) {
         };
 
         mediaRecorderRef.current.onstop = () => {
-            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/mp3' });
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/ogg' });
             setAudioBlob(audioBlob);
             const audioURL = URL.createObjectURL(audioBlob);
             onAudioCapture(audioBlob, audioURL); // Send blob and URL to parent

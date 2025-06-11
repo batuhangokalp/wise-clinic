@@ -39,6 +39,9 @@ function ChatInput(props) {
 
   const handleAudioCapture = (audioURL, audioBlob) => {
     setAudioMessage({ url: audioURL, blob: audioBlob });
+    dispatch(
+      setChatFile(new File([audioBlob], "audio.ogg", { type: "audio/ogg" }))
+    );
   };
 
   //function for text input value change
@@ -63,22 +66,28 @@ function ChatInput(props) {
   //function for send data to onaddMessage function(in userChat/index.js component)
   const onaddMessage = async (e, textMessage) => {
     e.preventDefault();
-    //if text value is not emptry then call onaddMessage function
-    if (textMessage !== "") {
+
+    if (textMessage && textMessage.trim() !== "") {
       await props.onaddMessage(textMessage, "textMessage");
+    }
+
+    if (chatFile) {
+      const fileType = findFileType(chatFile.type);
+
+      if (fileType === FileTypeId.Document) {
+        await props.onaddMessage(chatFile, "fileMessage");
+      } else if (FileTypeId.Image.includes(fileType)) {
+        await props.onaddMessage(chatFile, "imageMessage");
+      } else if (FileTypeId.Audio.includes(fileType)) {
+        await props.onaddMessage(chatFile, "audioMessage");
+      }
+
+      dispatch(setChatFile(null));
+    }
+
+    // Eğer textMessage gönderildiyse inputu sıfırlama işlemini de burada yapabilirsin
+    if (textMessage) {
       dispatch(setTextMessage(""));
-    }
-
-    //if file input value is not empty then call onaddMessage function
-    if (findFileType(chatFile?.type) === FileTypeId.Document) {
-      await props.onaddMessage(chatFile, "fileMessage");
-      dispatch(setChatFile(null));
-    }
-
-    //if image input value is not empty then call onaddMessage function
-    if (FileTypeId.Image?.includes(findFileType(chatFile?.type))) {
-      await props.onaddMessage(chatFile, "imageMessage");
-      dispatch(setChatFile(null));
     }
   };
 

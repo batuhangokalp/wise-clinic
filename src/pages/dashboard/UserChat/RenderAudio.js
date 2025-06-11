@@ -7,7 +7,7 @@ export default function RenderAudio({ chatFile, url }) {
             {chatFile &&  FileTypeId.Audio?.includes(findFileType(chatFile?.type)) && (
                 <div className="text-center">
                     <audio controls>
-                        <source src={URL.createObjectURL(chatFile)} type="audio/mp3" />
+                        <source src={URL.createObjectURL(chatFile)} type="audio/ogg" />
                     </audio>
                 </div>
             )}

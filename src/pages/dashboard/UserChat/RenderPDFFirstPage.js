@@ -1,29 +1,38 @@
 import React, { useEffect, useRef, useState } from "react";
-import * as pdfjsLib from "pdfjs-dist";
 import { useTranslation } from "react-i18next";
+import * as pdfjsLib from "pdfjs-dist/build/pdf";
+import workerSrc from "pdfjs-dist/build/pdf.worker.entry";
+
 import { FileTypeId, findFileType } from "../../../helpers/chatConstants";
 
-// Worker tanımlaması
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
-export default function RenderPDFFirstPage({ chatFile }) {
+export default function RenderPDFFirstPage({ chatFile, url }) {
   const { t } = useTranslation();
   const [imageSrc, setImageSrc] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
   const canvasRef = useRef();
+
   const [pdfUrl, setPdfUrl] = useState(null);
 
   useEffect(() => {
     if (chatFile && findFileType(chatFile?.type) === FileTypeId.Document) {
-      setPdfUrl(URL.createObjectURL(chatFile));
+      const blobUrl = URL.createObjectURL(chatFile);
+      setPdfUrl(blobUrl);
+    } else if (url) {
+      setPdfUrl(url);
     }
-  }, [chatFile]);
+  }, [chatFile, url]);
 
   useEffect(() => {
     const renderFirstPage = async () => {
       try {
-        const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+        const loadingTask = pdfjsLib.getDocument({
+          url: pdfUrl,
+          withCredentials: false,
+        });
 
+        const pdf = await loadingTask.promise;
         setTotalPages(pdf.numPages);
 
         const page = await pdf.getPage(1);
@@ -35,17 +44,11 @@ export default function RenderPDFFirstPage({ chatFile }) {
         canvas.width = viewport.width;
         canvas.height = viewport.height;
 
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
-        };
-
-        await page.render(renderContext).promise;
-
+        await page.render({ canvasContext: context, viewport }).promise;
         const image = canvas.toDataURL("image/png");
         setImageSrc(image);
-      } catch (error) {
-        console.error("Error rendering PDF page:", error);
+      } catch (err) {
+        console.error("PDF render error:", err);
       }
     };
 
@@ -53,25 +56,27 @@ export default function RenderPDFFirstPage({ chatFile }) {
   }, [pdfUrl]);
 
   return (
-    <div>
-      {chatFile && findFileType(chatFile?.type) === FileTypeId.Document && (
-        <div className="text-center">
-          {imageSrc ? (
-            <div>
-              <img
-                src={imageSrc}
-                alt="First page of PDF"
-                style={{ maxWidth: "100%" }}
-              />
-              <p>{t("Total Pages")} {totalPages}</p>
-            </div>
-          ) : (
-            <>
-              <canvas ref={canvasRef} style={{ display: "none" }} />
-              <i className="ri-file-text-fill" style={{ fontSize: "100px" }}></i>
-            </>
-          )}
-        </div>
+    <div className="text-center">
+      {imageSrc ? (
+        <>
+          <img
+            src={imageSrc}
+            alt="First page of PDF"
+            style={{
+              maxWidth: "100%",
+              maxHeight: "150px",
+              objectFit: "contain",
+            }}
+          />
+          <p className="text-sm text-gray-500">
+            {t("Total Pages")} {totalPages}
+          </p>
+        </>
+      ) : (
+        <>
+          <canvas ref={canvasRef} style={{ display: "none" }} />
+          <i className="ri-file-text-fill" style={{ fontSize: "40px" }}></i>
+        </>
       )}
     </div>
   );

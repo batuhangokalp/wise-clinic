@@ -46,6 +46,7 @@ import RenderImage from "./RenderImage";
 import RenderAudio from "./RenderAudio";
 import RenderVideo from "./RenderVideo";
 import MessageStatus from "./MessageStatus";
+import RenderPDFFirstPage from "./RenderPDFFirstPage";
 
 function UserChat(props) {
   const dispatch = useDispatch();
@@ -148,14 +149,14 @@ function UserChat(props) {
     if (!socket) return;
 
     const handleMessageStatus = (data) => {
-      console.log("✅ Socket event: message-status", data);
+      //console.log("✅ Socket event: message-status", data);
 
       if (data.eventType === "message-status") {
         const { messageId, status } = data;
-        console.log("Gupshup ID:", messageId, "Status:", status);
+        //console.log("Gupshup ID:", messageId, "Status:", status);
 
         if (!Array.isArray(chatMessages)) {
-          console.warn("chatMessages bir dizi değil:", chatMessages);
+          //console.warn("chatMessages bir dizi değil:", chatMessages);
           return;
         }
 
@@ -177,24 +178,58 @@ function UserChat(props) {
   const toggle = () => setModal(!modal);
   const user = useSelector((state) => state.User.user);
 
-  const sendMessage = async (message) => {
+  const sendMessage = async (message, type) => {
     try {
+      let bodyData;
+
+      if (
+        type === "audioMessage" ||
+        type === "fileMessage" ||
+        type === "imageMessage"
+      ) {
+        // Eğer dosya gönderiyorsan form-data kullan
+        const formData = new FormData();
+        formData.append("phone_number", props.activeConversation?.phone_number);
+        formData.append(
+          "message_type_name",
+          type === "audioMessage"
+            ? "audio"
+            : type === "fileMessage"
+            ? "document"
+            : "image"
+        );
+        formData.append("message_category", "session");
+        formData.append("sender_source", "908503770269");
+        formData.append(
+          "receiver_destination",
+          props.activeConversation?.phone_number
+        );
+        formData.append("assigned_user_id", user?.id);
+        formData.append("file", message); // message burada File veya Blob nesnesi
+
+        bodyData = formData;
+      } else {
+        // Text mesaj için JSON gönder
+        bodyData = JSON.stringify({
+          phone_number: props.activeConversation?.phone_number,
+          message_content: message,
+          message_type_name: "text",
+          message_category: "session",
+          sender_source: "908503770269",
+          receiver_destination: props.activeConversation?.phone_number,
+          assigned_user_id: user?.id,
+        });
+      }
+
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/api/messages/send`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            phone_number: props.activeConversation?.phone_number,
-            message_content: message,
-            message_type_name: "text",
-            message_category: "session",
-            sender_source: "908503770269",
-            receiver_destination: props.activeConversation?.phone_number,
-            assigned_user_id: user?.id,
-          }),
+          headers:
+            type === "textMessage"
+              ? { "Content-Type": "application/json" }
+              : {}, // form-data için content-type otomatik atanır
+          body: bodyData,
         }
       );
       const data = await response.json();
@@ -211,11 +246,9 @@ function UserChat(props) {
     var n = d.getSeconds();
 
     // Backend’den dönen mesajı bekle
-    const responseData = await sendMessage(message);
-    const backendMessage = responseData?.data;
+    const responseData = await sendMessage(message, type);
 
-    console.log("backendMessage:", backendMessage);
-    //matches the message type is text, file or image, and create object according to it
+    const backendMessage = responseData?.data;
     switch (type) {
       case "textMessage":
         messageObj = {
@@ -239,6 +272,7 @@ function UserChat(props) {
           image: avatar4,
           isFileMessage: true,
           isImageMessage: false,
+          isAudioMessage: false,
           file_type_id: FileTypeId.Document,
         };
         break;
@@ -255,7 +289,23 @@ function UserChat(props) {
           sender_type: "user",
           isImageMessage: true,
           isFileMessage: false,
+          isAudioMessage: false,
+
           file_type_id: FileTypeId.Image[0],
+        };
+        break;
+      case "audioMessage":
+        messageObj = {
+          id: chatMessages.length + 1,
+          message_content: "audio",
+          fileMessage: message.name,
+          size: message.size,
+          time: "00:" + n,
+          sender_type: "user",
+          isFileMessage: false,
+          isImageMessage: false,
+          isAudioMessage: true,
+          file_type_id: FileTypeId.Audio[0],
         };
         break;
 
@@ -437,10 +487,9 @@ function UserChat(props) {
                               {FileTypeId.Image?.includes(
                                 chat?.file_type_id
                               ) && <RenderImage url={chat?.file_path} />}
-                              {chat?.file_type_id === FileTypeId.Document && (
-                                //file input component
-                                <FileList file={chat} />
-                              )}
+                              {FileTypeId.Document.includes(
+                                Number(chat?.file_type_id)
+                              ) && <RenderPDFFirstPage url={chat?.file_path} />}
                               {chat?.file_type_id === FileTypeId.Video && (
                                 //file input component
                                 <RenderVideo url={chat?.file_path} />
@@ -606,20 +655,43 @@ function UserChat(props) {
                                   {chat?.message_content}
                                 </p>
                               )}
-
                               {FileTypeId.Image?.includes(
                                 chat?.file_type_id
                               ) && <RenderImage url={chat?.file_path} />}
+                              {console.log("chat?.file_type_id", chat)}
+                              {
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  {FileTypeId.Document.includes(
+                                    Number(chat?.file_type_id)
+                                  ) && (
+                                    <RenderPDFFirstPage url={chat?.file_path} />
+                                  )}
+                                  {chat?.message_content ===
+                                    "application/pdf" && (
+                                    <div>
+                                      <a
+                                        href={chat?.file_path}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        View PDF
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              }
 
-                              {chat?.file_type_id === FileTypeId.Document && (
-                                //file input component
-                                <FileList file={chat} />
-                              )}
-
-                              {chat?.file_type_id === FileTypeId.Video && (
-                                //file input component
-                                <RenderVideo url={chat?.file_path} />
-                              )}
+                              {FileTypeId.Video.includes(
+                                Number(chat?.file_type_id)
+                              ) && <RenderVideo url={chat?.file_path} />}
+                              {console.log("chat?.file_type_id", chat)}
                               {FileTypeId.Audio?.includes(
                                 chat?.file_type_id
                               ) && (
@@ -653,7 +725,13 @@ function UserChat(props) {
                                     </span>
                                   </p>
                                 ) : (
-                                  <p className="chat-time mb-0" style={{position: "absolute", right: "25px"}}>
+                                  <p
+                                    className="chat-time mb-0"
+                                    style={{
+                                      position: "absolute",
+                                      right: "25px",
+                                    }}
+                                  >
                                     <i className="ri-time-line align-middle"></i>{" "}
                                     <span className="align-middle">
                                       {showChatMessageTime(chat?.created_at)}
