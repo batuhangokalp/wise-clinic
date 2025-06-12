@@ -34,7 +34,6 @@ export default function SendFileModal() {
   const user = useSelector((state) => state.User.user);
 
   const handleSend = async () => {
-    console.log("BURASI")
     const formData = new FormData();
     formData.append("file", chatFile);
 
@@ -115,11 +114,11 @@ export default function SendFileModal() {
         <RenderAudio chatFile={chatFile} />
         <RenderVideo chatFile={chatFile} />
 
-        {chatFile && findFileType(chatFile?.type) === FileTypeId.Text && (
+        {/* {chatFile && findFileType(chatFile?.type) === FileTypeId.Text && (
           <div className="text-center">
             <i className="ri-file-text-fill" style={{ fontSize: "100px" }}></i>
           </div>
-        )}
+        )} */}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>

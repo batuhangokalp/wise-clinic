@@ -487,13 +487,16 @@ function UserChat(props) {
                               {FileTypeId.Image?.includes(
                                 chat?.file_type_id
                               ) && <RenderImage url={chat?.file_path} />}
+
                               {FileTypeId.Document.includes(
                                 Number(chat?.file_type_id)
                               ) && <RenderPDFFirstPage url={chat?.file_path} />}
+
                               {chat?.file_type_id === FileTypeId.Video && (
                                 //file input component
                                 <RenderVideo url={chat?.file_path} />
                               )}
+                              
                               {FileTypeId.Audio?.includes(
                                 chat?.file_type_id
                               ) && (

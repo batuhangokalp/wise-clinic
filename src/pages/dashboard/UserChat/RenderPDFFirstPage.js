@@ -75,7 +75,8 @@ export default function RenderPDFFirstPage({ chatFile, url }) {
       ) : (
         <>
           <canvas ref={canvasRef} style={{ display: "none" }} />
-          <i className="ri-file-text-fill" style={{ fontSize: "40px" }}></i>
+          {url && <i className="ri-file-text-fill" style={{ fontSize: "40px" }}></i>}
+          
         </>
       )}
     </div>
