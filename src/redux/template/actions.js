@@ -204,47 +204,20 @@ export const fetchCannedResponseById = (id) => {
   };
 };
 
-const extractVariableKeys = (text) => {
-  return [...text.matchAll(/{{(.*?)}}/g)].map((m) => m[1]);
-};
-
-function injectExampleValues(text, variables) {
-  if (!text) return text;
-
-  const varNames = [...text.matchAll(/{{(.*?)}}/g)].map(m => m[1]);
-  let example = text;
-  varNames.forEach((name) => {
-    example = example.replace(`{{${name}}}`, `example_${name}`);
-  });
-  return example;
-}
-
-
 const formatTemplateForAPI = (template) => {
-  const exampleMap = {};
-
-  if (template.contentVariable) {
-    extractVariableKeys(template.contentVariable).forEach((key) => {
-      exampleMap[key] = `example_${key}`;
-    });
-  }
-
-  // Eğer contentVariable varsa, direkt kullan, yoksa example ile aynı olsun
-  const contentForAPI = template.contentVariable || template.content;
-  const headerForAPI = template.headerVariable || template.header;
-
   const apiBody = {
     category: template.category,
     template_type: template.template_type,
     element_name: template.element_name,
     language_code: template.language_code,
     vertical: template.element_name,
-    header: headerForAPI || "",  
-    content: contentForAPI, 
     footer: template.footer || "",
-    example: injectExampleValues(contentForAPI, exampleMap), 
-    example_header: injectExampleValues(headerForAPI, exampleMap),
     allow_template_category_change: false,
+    header: template.header || "",
+    example_header: template.example_header || "",
+    content: template.content || "",
+    example: template.example || "",
+    example_media: template.sample_media || "",
   };
 
   if (template.buttons?.length > 0) {
@@ -254,13 +227,9 @@ const formatTemplateForAPI = (template) => {
   return apiBody;
 };
 
-
-
 export const createTemplate = (template) => {
-  console.log("template", template);
   const apiBody = formatTemplateForAPI(template);
 
-  console.log("API BODY", apiBody);
   return async (dispatch) => {
     try {
       const response = await fetch(

@@ -46,10 +46,17 @@ export default function TemplatesCard(props) {
   const [createTemplateModal, setCreateTemplateModal] = useState(false);
   const [updateTemplateModal, setUpdateTemplateModal] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [variableContent, setVariableContent] = useState("");
-  const [variableHeader, setVariableHeader] = useState("");
+  const [variableContent, setVariableContent] = useState([]);
+  const [variableHeader, setVariableHeader] = useState([]);
   const [inputVariable, setInputVariable] = useState("");
-  const [inputVariableHeader, setInputVariableHeader] = useState("");
+
+  // FOR HEADER
+  const [tempKey, setTempKey] = useState("");
+  const [tempValue, setTempValue] = useState("");
+
+  // FOR CONTENT
+  const [tempContentKey, setTempContentKey] = useState("");
+  const [tempContentValue, setTempContentValue] = useState("");
 
   const [open, setOpen] = useState(false);
   const [openHeaderModal, setOpenHeaderModal] = useState(false);
@@ -70,14 +77,45 @@ export default function TemplatesCard(props) {
   const toggle = () => setOpen(!open);
   const toggleHeaderModal = () => setOpenHeaderModal(!openHeaderModal);
 
-  const handleAddVariableContent = (inputVar) => {
-    setInputVariable(inputVar);
+  const handleAddVariableContent = () => {
+    if (!tempContentKey || !tempContentValue) return;
+
+    setVariableContent((prev) => {
+      const updated = [...prev];
+      const index = updated.findIndex((item) => item.key === tempContentKey);
+      if (index !== -1) {
+        updated[index].value = tempContentValue;
+      } else {
+        updated.push({ key: tempContentKey, value: tempContentValue });
+      }
+      return updated;
+    });
+
     toggle();
+    setTempContentKey("");
+    setTempContentValue("");
   };
-  const handleAddVariableHeader = (inputVar) => {
-    setInputVariableHeader(inputVar);
+
+  const handleAddVariableHeader = () => {
+    if (!tempKey || !tempValue) return;
+
+    setVariableHeader((prev) => {
+      const updated = [...prev];
+      const index = updated.findIndex((item) => item.key === tempKey);
+      if (index !== -1) {
+        updated[index].value = tempValue;
+      } else {
+        updated.push({ key: tempKey, value: tempValue });
+      }
+      return updated;
+    });
+
+    // Modal kapat ve inputları sıfırla
     toggleHeaderModal();
+    setTempKey("");
+    setTempValue("");
   };
+
   useEffect(() => {
     dispatch(fetchTemplates());
   }, [dispatch]);
@@ -119,10 +157,28 @@ export default function TemplatesCard(props) {
     state: { pageIndex },
   } = tableInstance;
 
+  const resolveVariables = (text, variables) => {
+    if (!variables || variables.length === 0) return text;
+
+    return text.replace(/\{\{(\d+)\}\}/g, (_, key) => {
+      const found = variables.find((v) => v.key === key);
+      return found ? found.value : `{{${key}}}`;
+    });
+  };
+
   const handleCreateSubmit = async (values) => {
-    values.contentVariable = `{{${inputVariable}}}`;
-    values.headerVariable = `{{${inputVariableHeader}}}`;
-    await dispatch(createTemplate(values)).then((response) => {
+    const exampleHeader = resolveVariables(values.header, variableHeader);
+    const exampleContent = resolveVariables(values.content, variableContent);
+
+    const template = {
+      ...values,
+      header: values.header,
+      example_header: exampleHeader,
+      content: values.content,
+      example: exampleContent,
+    };
+
+    await dispatch(createTemplate(template)).then((response) => {
       if (response) {
         setTimeout(async () => {
           setCreateTemplateModal(false);
@@ -197,6 +253,7 @@ export default function TemplatesCard(props) {
                   dispatch(apiTemplateError(null));
                   dispatch(apiTemplateSuccess(null));
                   setCreateTemplateModal(true);
+                  setSelectedTemplate(null);
                 }}
               >
                 {props.t("Create Template")}
@@ -329,6 +386,14 @@ export default function TemplatesCard(props) {
         variableHeader={variableHeader}
         setVariableHeader={setVariableHeader}
         handleAddVariableHeader={handleAddVariableHeader}
+        tempKey={tempKey}
+        setTempKey={setTempKey}
+        tempValue={tempValue}
+        setTempValue={setTempValue}
+        tempContentKey={tempContentKey}
+        setTempContentKey={setTempContentKey}
+        tempContentValue={tempContentValue}
+        setTempContentValue={setTempContentValue}
       />
       <UpdateTemplateModal
         modal={updateTemplateModal}

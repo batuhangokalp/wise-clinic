@@ -226,7 +226,7 @@ export const fetchMessageById = (messageId, chatMessages = undefined) => {
 
             return data?.message
         } catch (error) {
-            console.log(error)
+            //console.log(error)
         }
     }
 }

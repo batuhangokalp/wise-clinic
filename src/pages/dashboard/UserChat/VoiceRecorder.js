@@ -38,7 +38,7 @@ function VoiceRecorder({ onAudioCapture }) {
     };
 
     useEffect(() => {
-        console.log('audioBlob', audioBlob)
+        //console.log('audioBlob', audioBlob)
         if (audioBlob) {
             dispatch(setChatFile(audioBlob))
         }

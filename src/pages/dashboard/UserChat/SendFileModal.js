@@ -41,8 +41,6 @@ export default function SendFileModal() {
 
     let url = uploadResponse?.url || chatFile?.url;
 
-    console.log("Upload Response ", uploadResponse);
-
     let request = {
       phone_number: activeConversation?.phone_number,
       message_type_name: null,
@@ -54,7 +52,6 @@ export default function SendFileModal() {
       caption: chatFile?.type,
     };
 
-    console.log("request: ", request);
     let fileType = findFileType(chatFile?.type);
 
     if (FileTypeId.Image?.includes(fileType)) {

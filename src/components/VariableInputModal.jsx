@@ -13,21 +13,33 @@ import {
 const VariableInputModal = ({
   open,
   toggle,
-  variableContent,
-  setVariableContent,
   handleAddVariableContent,
+  tempContentKey,
+  setTempContentKey,
+  tempContentValue,
+  setTempContentValue,
 }) => {
   return (
     <Modal isOpen={open} toggle={toggle}>
-      <ModalHeader toggle={toggle}>Add Variable</ModalHeader>
+      <ModalHeader toggle={toggle}>Add Content Variable</ModalHeader>
       <ModalBody>
         <FormGroup>
-          <Label for="variableInput">Variable</Label>
+          <Label for="keyInput">Key (ex: 2)</Label>
           <Input
-            id="variableInput"
-            value={variableContent}
-            onChange={(e) => setVariableContent(e.target.value)}
-            placeholder="{{content}}"
+            id="keyInput"
+            type="number"
+            value={tempContentKey}
+            onChange={(e) => setTempContentKey(e.target.value)}
+            placeholder="Enter Key"
+          />
+        </FormGroup>
+        <FormGroup>
+          <Label for="valueInput">Value</Label>
+          <Input
+            id="valueInput"
+            value={tempContentValue}
+            onChange={(e) => setTempContentValue(e.target.value)}
+            placeholder="Enter Value"
           />
         </FormGroup>
       </ModalBody>
@@ -35,10 +47,7 @@ const VariableInputModal = ({
         <Button color="secondary" onClick={toggle}>
           Cancel
         </Button>
-        <Button
-          color="primary"
-          onClick={() => handleAddVariableContent(variableContent)}
-        >
+        <Button color="primary" onClick={handleAddVariableContent}>
           Add
         </Button>
       </ModalFooter>

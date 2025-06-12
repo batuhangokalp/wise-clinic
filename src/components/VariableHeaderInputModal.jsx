@@ -16,30 +16,46 @@ const VariableHeaderInputModal = ({
   variableHeader,
   setVariableHeader,
   handleAddVariableHeader,
+  setOpenHeaderModal,
+  tempKey,
+  setTempKey,
+  tempValue,
+  setTempValue,
 }) => {
   return (
-    <Modal isOpen={openHeaderModal} toggle={toggleHeaderModal}>
-      <ModalHeader toggle={toggleHeaderModal}>Add Variable</ModalHeader>
+    <Modal
+      isOpen={openHeaderModal}
+      toggle={() => setOpenHeaderModal(!openHeaderModal)}
+    >
+      <ModalHeader toggle={() => setOpenHeaderModal(!openHeaderModal)}>
+        Variable Ekle
+      </ModalHeader>
       <ModalBody>
-        <FormGroup>
-          <Label for="variableInput">Variable</Label>
-          <Input
-            id="variableInput"
-            value={variableHeader}
-            onChange={(e) => setVariableHeader(e.target.value)}
-            placeholder="{{header}}"
+        <div className="mb-3">
+          <label>Variable Key (ex: 1)</label>
+          <input
+            className="form-control"
+            value={tempKey}
+            onChange={(e) => setTempKey(e.target.value)}
+            placeholder="1"
           />
-        </FormGroup>
+        </div>
+        <div className="mb-3">
+          <label>Value</label>
+          <input
+            className="form-control"
+            value={tempValue}
+            onChange={(e) => setTempValue(e.target.value)}
+            placeholder="Value"
+          />
+        </div>
       </ModalBody>
       <ModalFooter>
-        <Button color="secondary" onClick={toggleHeaderModal}>
-          Cancel
+        <Button color="primary" onClick={handleAddVariableHeader}>
+          Ekle
         </Button>
-        <Button
-          color="primary"
-          onClick={() => handleAddVariableHeader(variableHeader)}
-        >
-          Add
+        <Button color="secondary" onClick={() => setOpenHeaderModal(false)}>
+          İptal
         </Button>
       </ModalFooter>
     </Modal>

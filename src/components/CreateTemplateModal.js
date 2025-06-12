@@ -9,14 +9,12 @@ import {
   Alert,
 } from "reactstrap";
 import { Formik, Form as FormikForm, Field, FieldArray } from "formik";
-import { uploadFile } from "../redux/actions";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import VariableInputModal from "./VariableInputModal";
 import VariableHeaderInputModal from "./VariableHeaderInputModal";
 
 export default function CreateTemplateModal(props) {
-  const dispatch = useDispatch();
   let {
     modal,
     toggleModal,
@@ -35,9 +33,16 @@ export default function CreateTemplateModal(props) {
     variableHeader,
     setVariableHeader,
     handleAddVariableHeader,
+    tempKey,
+    setTempKey,
+    tempValue,
+    setTempValue,
+    tempContentKey,
+    setTempContentKey,
+    tempContentValue,
+    setTempContentValue,
   } = props;
   const languages = useSelector((state) => state.Layout.languages);
-
   const categoryOptions = [
     { label: "Marketing", value: "MARKETING" },
     { label: "Utility", value: "UTILITY" },
@@ -49,6 +54,34 @@ export default function CreateTemplateModal(props) {
     { label: "Video", value: "VIDEO" },
     { label: "Document", value: "DOCUMENT" },
   ];
+
+  const handleFileUpload = async (file, setFieldValue) => {
+    if (!file) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/templates/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setFieldValue("sample_media", result);
+      } else {
+        console.error("Yükleme başarısız:", result);
+      }
+    } catch (error) {
+      console.error("Upload hatası:", error);
+    }
+  };
+
   return (
     <Modal isOpen={modal} centered toggle={toggleModal}>
       <ModalHeader tag="h5" className="font-size-16" toggle={toggleModal}>
@@ -212,28 +245,49 @@ export default function CreateTemplateModal(props) {
                       <Label className="form-label" htmlFor="header">
                         {parentProps?.t?.("Header")}
                       </Label>
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => setOpenHeaderModal(true)}
-                      >
-                        Add Variable
-                      </Button>
-                      <Field
-                        name="header"
-                        type="text"
-                        className="form-control"
-                        id="header"
-                        placeholder={parentProps?.t?.("Enter header")}
-                        style={errors.header ? { borderColor: "red" } : {}}
-                      />
+
+                      <div className="d-flex gap-2 mb-2">
+                        <Field
+                          name="header"
+                          type="text"
+                          className="form-control"
+                          id="header"
+                          placeholder="Enter header"
+                          style={errors.header ? { borderColor: "red" } : {}}
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => setOpenHeaderModal(true)}
+                        >
+                          Add Variable
+                        </Button>
+                      </div>
+
+                      {/* Önizleme */}
+                      <div className="text-muted small">
+                        Preview:{" "}
+                        {values.header?.replace(/\{\{(\d+)\}\}/g, (_, key) => {
+                          const found = variableHeader.find(
+                            (v) => v.key === key
+                          );
+                          return found ? found.value : `{{${key}}}`;
+                        })}
+                      </div>
+
                       <VariableHeaderInputModal
                         openHeaderModal={openHeaderModal}
                         toggleHeaderModal={toggleHeaderModal}
                         variableHeader={variableHeader}
                         setVariableHeader={setVariableHeader}
                         handleAddVariableHeader={handleAddVariableHeader}
+                        setOpenHeaderModal={setOpenHeaderModal}
+                        tempKey={tempKey}
+                        setTempKey={setTempKey}
+                        tempValue={tempValue}
+                        setTempValue={setTempValue}
                       />
+
                       {errors.header && touched.header && (
                         <span className="mt-2 text-danger">
                           {errors.header}
@@ -256,9 +310,12 @@ export default function CreateTemplateModal(props) {
                     id="header"
                     name="header"
                     className="form-control"
-                    onChange={(event) => {
-                      setFieldValue("header", event.currentTarget.files[0]);
-                    }}
+                    onChange={(event) =>
+                      handleFileUpload(
+                        event.currentTarget.files[0],
+                        setFieldValue
+                      )
+                    }
                     style={errors.header ? { borderColor: "red" } : {}}
                   />
                   {errors.header && touched.header && (
@@ -272,17 +329,31 @@ export default function CreateTemplateModal(props) {
                 <Label className="form-label" htmlFor="content">
                   {parentProps?.t?.("Content")}
                 </Label>
-                <Button type="button" size="sm" onClick={() => setOpen(true)}>
-                  Add Variable
-                </Button>
-                <Field
-                  name="content"
-                  type="text"
-                  className="form-control"
-                  id="content"
-                  placeholder={parentProps?.t?.("Enter content")}
-                  style={errors.data ? { borderColor: "red" } : {}}
-                />
+                <div style={{ display: "flex", flexDirection: "row" }}>
+                  <Field
+                    name="content"
+                    type="text"
+                    className="form-control"
+                    id="content"
+                    placeholder={parentProps?.t?.("Enter content")}
+                    style={errors.data ? { borderColor: "red" } : {}}
+                  />
+                  <Button type="button" size="sm" onClick={() => setOpen(true)}>
+                    Add Variable
+                  </Button>
+                </div>
+                {/* Önizleme */}
+                <div className="text-muted small">
+                  Preview:{" "}
+                  {values.content
+                    ? values.content.replace(/\{\{(\d+)\}\}/g, (_, key) => {
+                        const found = variableContent.find(
+                          (v) => v.key === key
+                        );
+                        return found ? found.value : `{{${key}}}`;
+                      })
+                    : ""}
+                </div>
                 {errors.content && touched.content && (
                   <span className="mt-2 text-danger">{errors.content}</span>
                 )}
@@ -294,6 +365,10 @@ export default function CreateTemplateModal(props) {
                 variableContent={variableContent}
                 setVariableContent={setVariableContent}
                 handleAddVariableContent={handleAddVariableContent}
+                tempContentKey={tempContentKey}
+                setTempContentKey={setTempContentKey}
+                tempContentValue={tempContentValue}
+                setTempContentValue={setTempContentValue}
               />
               {/* Footer Toggle */}
               <div className="mb-4">

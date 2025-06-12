@@ -59,7 +59,7 @@ const ChatsWrapper = (props) => {
     // Clean up the socket connection when the component is unmounted
     return () => {
       socketInstance.disconnect();
-      console.log("Disconnected from the server");
+      //console.log("Disconnected from the server");
     };
   }, [SOCKET_SERVER_URL]);
 
