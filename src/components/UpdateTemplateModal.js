@@ -65,8 +65,8 @@ export default function UpdateTemplateModal(props) {
                   style={errors.category ? { borderColor: "red" } : {}}
                 >
                   <option value="">
-                    {values.category
-                      ? values.category
+                    {values?.category
+                      ? values?.category
                       : parentProps?.t?.("Select category")}
                   </option>
                   {categoryOptions.map((category) => (
@@ -112,8 +112,8 @@ export default function UpdateTemplateModal(props) {
                   style={errors.language_code ? { borderColor: "red" } : {}}
                 >
                   <option value="">
-                    {values.language_code
-                      ? values.language_code
+                    {values?.language_code
+                      ? values?.language_code
                       : parentProps?.t?.("Select language")}
                   </option>
                   {languages.map((lang) => (
@@ -141,8 +141,8 @@ export default function UpdateTemplateModal(props) {
                   style={errors.template_type ? { borderColor: "red" } : {}}
                 >
                   <option value="" disabled hidden>
-                    {values.template_type
-                      ? values.template_type
+                    {values?.template_type
+                      ? values?.template_type
                       : parentProps?.t?.("Select template type")}
                   </option>
                   {templateTypeOptions.map((option) => (
@@ -160,7 +160,7 @@ export default function UpdateTemplateModal(props) {
               </div>
 
               {/* Dynamic Content Input */}
-              {values.template_type === "TEXT" && (
+              {values?.template_type === "TEXT" && (
                 <div className="mb-4">
                   <Label className="form-label" htmlFor="header">
                     {parentProps?.t?.("Header")}
@@ -180,7 +180,7 @@ export default function UpdateTemplateModal(props) {
               )}
 
               {["IMAGE", "VIDEO", "DOCUMENT"].includes(
-                values.template_type
+                values?.template_type
               ) && (
                 <div className="mb-4">
                   <Label className="form-label" htmlFor="header">

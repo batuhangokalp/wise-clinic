@@ -62,6 +62,39 @@ function UserChat(props) {
   //sender_type must be required
   const chatMessages = useSelector((state) => state.Chat?.chatMessages);
   const [socket, setSocket] = useState(null);
+  const [bitrixData, setBitrixData] = useState([]);
+
+  useEffect(() => {
+    const fetchBitrixData = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/bitrix/crm-records/${props.activeConversation?.phone_number}`,
+          {
+            headers: {
+              Accept: "*/*",
+              "Accept-Encoding": "gzip, deflate",
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0",
+              Host: `${process.env.REACT_APP_API_URL}`,
+              "ngrok-skip-browser-warning": 69420,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP hata durumu: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("API Response:", data);
+        setBitrixData(data);
+      } catch (error) {
+        console.error("Bitrix API hatası:", error);
+      }
+    };
+
+    fetchBitrixData();
+  }, [props.activeConversation?.phone_number]);
 
   useEffect(() => {
     // Initialize the socket connection
@@ -496,7 +529,7 @@ function UserChat(props) {
                                 //file input component
                                 <RenderVideo url={chat?.file_path} />
                               )}
-                              
+
                               {FileTypeId.Audio?.includes(
                                 chat?.file_type_id
                               ) && (
@@ -661,7 +694,6 @@ function UserChat(props) {
                               {FileTypeId.Image?.includes(
                                 chat?.file_type_id
                               ) && <RenderImage url={chat?.file_path} />}
-                              {console.log("chat?.file_type_id", chat)}
                               {
                                 <div
                                   style={{
@@ -694,7 +726,6 @@ function UserChat(props) {
                               {FileTypeId.Video.includes(
                                 Number(chat?.file_type_id)
                               ) && <RenderVideo url={chat?.file_path} />}
-                              {console.log("chat?.file_type_id", chat)}
                               {FileTypeId.Audio?.includes(
                                 chat?.file_type_id
                               ) && (
@@ -812,7 +843,10 @@ function UserChat(props) {
           <ChatInput onaddMessage={addMessage} />
         </div>
 
-        <UserProfileSidebar activeConversation={props.activeConversation} />
+        <UserProfileSidebar
+          activeConversation={props.activeConversation}
+          bitrixData={bitrixData}
+        />
       </div>
     </div>
   );
