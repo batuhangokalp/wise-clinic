@@ -26,7 +26,7 @@ function LockScreen(props) {
             password: Yup.string().required('Please Enter Your Password')
         }),
         onSubmit: values => {
-            console.log(values)
+            //console.log(values)
         },
     });
 

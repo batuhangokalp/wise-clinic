@@ -86,7 +86,6 @@ function UserChat(props) {
         }
 
         const data = await response.json();
-        console.log("API Response:", data);
         setBitrixData(data);
       } catch (error) {
         console.error("Bitrix API hatası:", error);
