@@ -29,7 +29,7 @@ const Index = () => {
             
 
             {/* user chat */}
-            {activeTab !== pageTabs.settings && <UserChat />}
+            {activeTab === pageTabs.chat && <UserChat />}
             {activeTab === pageTabs.settings && <Settings />}
         </React.Fragment>
     );
