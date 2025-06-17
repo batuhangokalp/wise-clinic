@@ -513,8 +513,8 @@ function UserChat(props) {
                         <div className="user-chat-content">
                           <div className="ctext-wrap">
                             <div className="ctext-wrap-content">
-                              {chat?.file_type_id === null && (
-                                <p className="mb-0">{chat?.message_content}</p>
+                              {!chat?.message_content?.startsWith("https") && (
+                                <div>{chat.message_content}</div>
                               )}
                               {FileTypeId.Image?.includes(
                                 chat?.file_type_id
@@ -685,52 +685,55 @@ function UserChat(props) {
                         >
                           <div className="ctext-wrap mb-3">
                             <div className="ctext-wrap-content">
-                              {chat?.file_type_id === null && (
-                                <p className="mb-0 d-flex">
-                                  {chat?.message_content}
-                                </p>
-                              )}
-                              {FileTypeId.Image?.includes(
-                                chat?.file_type_id
-                              ) && <RenderImage url={chat?.file_path} />}
-                              {
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  {FileTypeId.Document.includes(
-                                    Number(chat?.file_type_id)
-                                  ) && (
-                                    <RenderPDFFirstPage url={chat?.file_path} />
-                                  )}
-                                  {chat?.message_content ===
-                                    "application/pdf" && (
-                                    <div>
-                                      <a
-                                        href={chat?.file_path}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                      >
-                                        View PDF
-                                      </a>
-                                    </div>
-                                  )}
-                                </div>
-                              }
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: "8px",
+                                  alignSelf: "flex-start", 
+                                  textAlign: "left", 
+                                }}
+                              >
+                                {/* Görsel varsa üstte */}
+                                {FileTypeId.Image?.includes(
+                                  chat?.file_type_id
+                                ) && <RenderImage url={chat?.file_path} />}
 
-                              {FileTypeId.Video.includes(
-                                Number(chat?.file_type_id)
-                              ) && <RenderVideo url={chat?.file_path} />}
-                              {FileTypeId.Audio?.includes(
-                                chat?.file_type_id
-                              ) && (
-                                //file input component
-                                <RenderAudio url={chat?.file_path} />
-                              )}
+                                {/* PDF dosyası varsa */}
+                                {FileTypeId.Document.includes(
+                                  Number(chat?.file_type_id)
+                                ) && (
+                                  <RenderPDFFirstPage url={chat?.file_path} />
+                                )}
+                                {chat?.message_content ===
+                                  "application/pdf" && (
+                                  <div>
+                                    <a
+                                      href={chat?.file_path}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      View PDF
+                                    </a>
+                                  </div>
+                                )}
+
+                                {/* Video varsa */}
+                                {FileTypeId.Video.includes(
+                                  Number(chat?.file_type_id)
+                                ) && <RenderVideo url={chat?.file_path} />}
+
+                                {/* Ses varsa */}
+                                {FileTypeId.Audio?.includes(
+                                  chat?.file_type_id
+                                ) && <RenderAudio url={chat?.file_path} />}
+
+                                {/* Text mesaj (https ile başlamıyorsa) */}
+                                {!chat?.message_content?.startsWith(
+                                  "https"
+                                ) && <div>{chat.message_content}</div>}
+                              </div>
+
                               {chat?.isTyping && (
                                 <p className="mb-0">
                                   typing

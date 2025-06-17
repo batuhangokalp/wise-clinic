@@ -209,7 +209,7 @@ const formatTemplateForAPI = (template) => {
     category: template.category,
     template_type: template.template_type,
     element_name: template.element_name,
-    language_code: template.language_code,
+    language_code: template.language_code.toLowerCase(),
     vertical: template.element_name,
     footer: template.footer || "",
     allow_template_category_change: false,
@@ -229,7 +229,6 @@ const formatTemplateForAPI = (template) => {
 
 export const createTemplate = (template) => {
   const apiBody = formatTemplateForAPI(template);
-
   return async (dispatch) => {
     try {
       const response = await fetch(

@@ -10,7 +10,7 @@ export default function ReportFilters({
 }) {
   return (
     <Form className="report-filters">
-      <Row form>
+      <Row>
         <Col md={3}>
           <FormGroup>
             <Label for="startDate">Start Date</Label>

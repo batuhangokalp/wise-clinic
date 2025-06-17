@@ -111,8 +111,8 @@ function ChatInput(props) {
   const handleTemplateSelect = (e, template, activeTab) => {
     e.preventDefault();
     activeTab === "1" && setSelectedTemplate(template);
-    activeTab === "1" && setShowSendTemplateMessageModal(true);
-    activeTab === "2" && dispatch(setTextMessage(template?.content));
+    //activeTab === "1" && setShowSendTemplateMessageModal(true);
+    dispatch(setTextMessage(template?.content));
   };
 
   return (

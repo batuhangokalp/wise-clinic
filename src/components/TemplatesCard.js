@@ -35,6 +35,10 @@ const columns = [
       );
     },
   },
+    {
+    Header: "Status",
+    accessor: "status",
+  },
 ];
 
 export default function TemplatesCard(props) {
@@ -48,7 +52,6 @@ export default function TemplatesCard(props) {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [variableContent, setVariableContent] = useState([]);
   const [variableHeader, setVariableHeader] = useState([]);
-  const [inputVariable, setInputVariable] = useState("");
 
   // FOR HEADER
   const [tempKey, setTempKey] = useState("");

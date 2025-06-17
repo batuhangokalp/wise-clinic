@@ -8,6 +8,7 @@ import {
   fetchMessagesByConversationId,
   sendMessage,
   setChatFile,
+  setTextMessage,
   uploadFile,
 } from "../../../redux/actions";
 import { useDispatch } from "react-redux";
@@ -24,6 +25,7 @@ export default function SendFileModal() {
 
   /* intilize t variable for multi language implementation */
   const { t } = useTranslation();
+  const textMessage = useSelector((state) => state.Chat.textMessage);
 
   const dispatch = useDispatch();
 
@@ -49,7 +51,9 @@ export default function SendFileModal() {
       receiver_destination: activeConversation?.phone_number,
       assigned_user_id: user?.id,
       url: url,
-      caption: chatFile?.type,
+      caption: textMessage ? textMessage : "",
+      message_content: "",
+      filename: chatFile?.name,
     };
 
     let fileType = findFileType(chatFile?.type);
@@ -76,6 +80,7 @@ export default function SendFileModal() {
   const handleClose = () => {
     setShow(false);
     dispatch(setChatFile(null));
+    dispatch(setTextMessage(""));
   };
 
   useEffect(() => {
