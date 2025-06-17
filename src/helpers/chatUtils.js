@@ -88,8 +88,8 @@ export const useTabNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const DEFAULT_TAB = "chat";
-  const VALID_TABS = ["chat", "group", "contacts", "settings", "profile"]; // Add all valid tab IDs
+  const DEFAULT_TAB = "profile";
+  const VALID_TABS = ["chat", "group", "contacts", "settings", "profile", "reports"]; // Add all valid tab IDs
 
   const toggleTab = (tab) => {
     if (VALID_TABS.includes(tab)) {

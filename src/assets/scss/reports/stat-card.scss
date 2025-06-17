@@ -1,0 +1,42 @@
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  &.purple {
+    background-color: #e9d8fd;
+    color: #4c1d95;
+  }
+
+  &.green {
+    background-color: #c6f6d5;
+    color: #22543d;
+  }
+
+  &.blue {
+    background-color: #bee3f8;
+    color: #2a4365;
+  }
+
+  &.yellow {
+    background-color: #fefcbf;
+    color: #744210;
+  }
+
+  i {
+    font-size: 28px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: inherit;
+  }
+}

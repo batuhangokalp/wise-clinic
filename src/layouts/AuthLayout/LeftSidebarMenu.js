@@ -201,7 +201,27 @@ function LeftSidebarMenu(props) {
                 </UncontrolledTooltip>
               </>
             )}
+            {hasPermission(roleId, PERMISSIONS.VIEW_REPORTS_PANEL) && (
+              <>
+                <NavItem id="reports">
+                  <NavLink
+                    id="pills-reports-tab"
+                    className={
+                      classnames({ active: activeTab === "reports" }) + " mb-2"
+                    }
+                    onClick={() => {
+                      toggleTab("reports");
+                    }}
+                  >
+                    <i className="ri-bar-chart-2-line"></i>
+                  </NavLink>
+                </NavItem>
 
+                <UncontrolledTooltip target="reports" placement="top">
+                  {t("Reports")}
+                </UncontrolledTooltip>
+              </>
+            )}
             <Dropdown
               nav
               isOpen={dropdownOpenMobile}

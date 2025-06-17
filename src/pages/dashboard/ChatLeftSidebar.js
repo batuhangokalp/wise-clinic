@@ -8,9 +8,9 @@ import Profile from "./Tabs/Profile";
 import Chats from "./Tabs/Chats";
 import Contacts from "./Tabs/Contacts";
 import Settings from "./Tabs/Settings";
+import Reports from "./Tabs/Reports";
 
 function ChatLeftSidebar(props) {
-
   const activeTab = props.activeTab;
 
   return (
@@ -22,7 +22,7 @@ function ChatLeftSidebar(props) {
           </TabPane>
 
           <TabPane tabId="chat" id="pills-chat">
-            <Chats  />
+            <Chats />
           </TabPane>
 
           <TabPane tabId="contacts" id="pills-contacts">
@@ -31,6 +31,10 @@ function ChatLeftSidebar(props) {
 
           <TabPane tabId="settings" id="pills-setting">
             <Settings />
+          </TabPane>
+
+          <TabPane tabId="reports" id="pills-reports">
+            <Reports />
           </TabPane>
         </TabContent>
       </div>
