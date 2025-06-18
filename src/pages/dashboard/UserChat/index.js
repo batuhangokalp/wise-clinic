@@ -26,6 +26,7 @@ import { FileTypeId, findFileType } from "../../../helpers/chatConstants";
 import SendFileModal from "./SendFileModal";
 import { downloadFile } from "../../../helpers/fileUtils";
 import {
+  fetchConversations,
   fetchMessagesByConversationId,
   setChatMessagesPage,
 } from "../../../redux/chat/actions";
@@ -47,6 +48,7 @@ import RenderAudio from "./RenderAudio";
 import RenderVideo from "./RenderVideo";
 import MessageStatus from "./MessageStatus";
 import RenderPDFFirstPage from "./RenderPDFFirstPage";
+import RenderFilePreview from "./RenderFilePreview";
 
 function UserChat(props) {
   const dispatch = useDispatch();
@@ -175,7 +177,14 @@ function UserChat(props) {
         socket.off("conversation_update", handleMessage);
       };
     }
-  }, [socket, props.activeConversationId, props.conversations, chatMessages]);
+  }, [
+    socket,
+    props.activeConversationId,
+    props.conversations,
+    chatMessages,
+    dispatch,
+    t,
+  ]);
 
   useEffect(() => {
     if (!socket) return;
@@ -265,6 +274,8 @@ function UserChat(props) {
         }
       );
       const data = await response.json();
+      dispatch(fetchConversations());
+
       return data;
     } catch (error) {
       console.error("Error:", error);
@@ -522,7 +533,12 @@ function UserChat(props) {
 
                               {FileTypeId.Document.includes(
                                 Number(chat?.file_type_id)
-                              ) && <RenderPDFFirstPage url={chat?.file_path} />}
+                              ) &&
+                                (chat?.file_path?.endsWith("pdf") ? (
+                                  <RenderPDFFirstPage url={chat?.file_path} />
+                                ) : (
+                                  <RenderFilePreview url={chat?.file_path} />
+                                ))}
 
                               {chat?.file_type_id === FileTypeId.Video && (
                                 //file input component
@@ -690,8 +706,8 @@ function UserChat(props) {
                                   display: "flex",
                                   flexDirection: "column",
                                   gap: "8px",
-                                  alignSelf: "flex-start", 
-                                  textAlign: "left", 
+                                  alignSelf: "flex-start",
+                                  textAlign: "left",
                                 }}
                               >
                                 {/* Görsel varsa üstte */}
@@ -699,24 +715,14 @@ function UserChat(props) {
                                   chat?.file_type_id
                                 ) && <RenderImage url={chat?.file_path} />}
 
-                                {/* PDF dosyası varsa */}
                                 {FileTypeId.Document.includes(
                                   Number(chat?.file_type_id)
-                                ) && (
-                                  <RenderPDFFirstPage url={chat?.file_path} />
-                                )}
-                                {chat?.message_content ===
-                                  "application/pdf" && (
-                                  <div>
-                                    <a
-                                      href={chat?.file_path}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                    >
-                                      View PDF
-                                    </a>
-                                  </div>
-                                )}
+                                ) &&
+                                  (chat?.file_path?.endsWith("pdf") ? (
+                                    <RenderPDFFirstPage url={chat?.file_path} />
+                                  ) : (
+                                    <RenderFilePreview url={chat?.file_path} />
+                                  ))}
 
                                 {/* Video varsa */}
                                 {FileTypeId.Video.includes(

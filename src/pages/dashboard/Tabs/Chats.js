@@ -67,6 +67,7 @@ const ChatsWrapper = (props) => {
     if (!socket || !props.activeConversation?.id) return;
 
     const currentId = props.activeConversation.id;
+    const handleConnect = () => console.log("Connected to server");
 
     const availableConversation = props.conversations?.find(
       (conv) => conv.id === currentId
@@ -99,17 +100,19 @@ const ChatsWrapper = (props) => {
 
       dispatch(fetchConversations());
     };
-
+    socket.on("connect", handleConnect);
     socket.on("new_message", handleNewMessage);
 
     return () => {
       socket.off("new_message", handleNewMessage);
+      socket.off("connect", handleConnect);
     };
   }, [
     socket,
     props.conversations,
     props.activeConversation?.id,
     props.activeConversation?.last_message_id,
+    dispatch,
   ]);
 
   return (

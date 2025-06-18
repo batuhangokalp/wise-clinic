@@ -19,6 +19,7 @@ import RenderVideo from "./RenderVideo";
 import RenderImage from "./RenderImage";
 import RenderAudio from "./RenderAudio";
 import { convertFileToBinary } from "../../../helpers/fileUtils";
+import RenderFilePreview from "./RenderFilePreview";
 
 export default function SendFileModal() {
   const [show, setShow] = React.useState(false);
@@ -112,6 +113,7 @@ export default function SendFileModal() {
       <Modal.Body style={{ alignSelf: "center" }}>
         <RenderImage chatFile={chatFile} />
         <RenderPDFFirstPage chatFile={chatFile} />
+        <RenderFilePreview chatFile={chatFile} />
 
         <RenderAudio chatFile={chatFile} />
         <RenderVideo chatFile={chatFile} />

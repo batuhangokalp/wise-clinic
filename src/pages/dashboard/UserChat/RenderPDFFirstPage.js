@@ -76,13 +76,12 @@
 //         <>
 //           <canvas ref={canvasRef} style={{ display: "none" }} />
 //           {url && <i className="ri-file-text-fill" style={{ fontSize: "40px" }}></i>}
-          
+
 //         </>
 //       )}
 //     </div>
 //   );
 // }
-
 
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -91,6 +90,15 @@ import { FileTypeId, findFileType } from "../../../helpers/chatConstants";
 export default function RenderPDFFirstPage({ chatFile, url }) {
   const { t } = useTranslation();
   const [pdfUrl, setPdfUrl] = useState(null);
+
+  const fileExtension = url?.split(".").pop()?.split("?")[0]?.toLowerCase();
+
+  // Dosya tipi PDF değilse hiçbir şey gösterme
+  const isPdf =
+    (chatFile &&
+      findFileType(chatFile?.type) === FileTypeId.Document &&
+      chatFile?.type?.includes("pdf")) ||
+    fileExtension === "pdf";
 
   useEffect(() => {
     if (chatFile && findFileType(chatFile?.type) === FileTypeId.Document) {
@@ -101,18 +109,39 @@ export default function RenderPDFFirstPage({ chatFile, url }) {
     }
   }, [chatFile, url]);
 
+  if (!isPdf) return null;
+
   return (
     <div className="text-center">
       {pdfUrl ? (
-        <iframe
-          src={pdfUrl}
-          title="PDF Preview"
-          style={{
-            width: "100%",
-            maxHeight: "400px",
-            borderRadius: "8px",
-          }}
-        />
+        <div>
+          <iframe
+            src={pdfUrl}
+            title="PDF Preview"
+            style={{
+              width: "100%",
+              maxHeight: "400px",
+              borderRadius: "8px",
+            }}
+          />
+          <a
+            href={pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            download
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              marginTop: "8px",
+              textDecoration: "none",
+              color: "#007bff",
+              fontWeight: "500",
+            }}
+          >
+            View
+          </a>
+        </div>
       ) : (
         <i className="ri-file-text-fill" style={{ fontSize: "40px" }} />
       )}
