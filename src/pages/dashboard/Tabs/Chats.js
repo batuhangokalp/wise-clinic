@@ -1,6 +1,6 @@
-import React, { act, Component, useEffect, useRef, useState } from "react";
+import React, { Component, useEffect, useRef, useState } from "react";
 import { Input, InputGroup } from "reactstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { connect, useDispatch, useSelector } from "react-redux";
 import {
   ChatPlatform,
@@ -27,7 +27,6 @@ import {
 } from "../../../redux/actions";
 import { ROLES } from "../../../redux/role/constants";
 import { io } from "socket.io-client";
-import axios from "axios";
 
 // Create a wrapper functional component
 const ChatsWrapper = (props) => {
@@ -67,7 +66,6 @@ const ChatsWrapper = (props) => {
     if (!socket || !props.activeConversation?.id) return;
 
     const currentId = props.activeConversation.id;
-    const handleConnect = () => console.log("Connected to server");
 
     const availableConversation = props.conversations?.find(
       (conv) => conv.id === currentId
@@ -100,12 +98,10 @@ const ChatsWrapper = (props) => {
 
       dispatch(fetchConversations());
     };
-    socket.on("connect", handleConnect);
     socket.on("new_message", handleNewMessage);
 
     return () => {
       socket.off("new_message", handleNewMessage);
-      socket.off("connect", handleConnect);
     };
   }, [
     socket,
@@ -170,6 +166,7 @@ class Chats extends Component {
       }
 
       const data = await response.json();
+
       // console.log("✔️ Sohbet okunma durumu güncellendi:", data);
       return data;
     } catch (error) {
@@ -187,6 +184,7 @@ class Chats extends Component {
     if (chat?.unread_count > 0 && chat.last_message_id) {
       try {
         await this.markConversationAsRead(apiUrl, chatId);
+        await this.props.fetchConversations();
       } catch (err) {
         // hata zaten üstte loglanıyor
       }
@@ -227,11 +225,6 @@ class Chats extends Component {
     const userChat = document.getElementsByClassName("user-chat");
     if (userChat.length > 0) {
       userChat[0].classList.add("user-chat-show");
-    }
-
-    const unread = document.getElementById("unRead" + chatId);
-    if (unread) {
-      unread.style.display = "none";
     }
   }
 
@@ -402,15 +395,10 @@ class Chats extends Component {
                         <div className="font-size-11">
                           {showLastMessageDate(chat?.updated_at)}
                         </div>
-                        {chat?.unRead === 0 ? null : (
-                          <div
-                            className="unread-message"
-                            id={"unRead" + chat?.id}
-                          >
+                        {chat.unread_count > 0 && (
+                          <div className="unread-message">
                             <span className="badge badge-soft-success rounded-pill">
-                              {chat?.last_message && chat?.unread_count > 0
-                                ? chat?.unread_count
-                                : ""}
+                              {chat.unread_count}
                             </span>
                           </div>
                         )}

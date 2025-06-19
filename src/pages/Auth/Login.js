@@ -57,12 +57,22 @@ const Login = (props) => {
 
   const handleAuth = async (token) => {
     localStorage.setItem("token", JSON.stringify(token));
-    let tokenData = atob(token.split(".")[1]);
-    let tokenJson = JSON.parse(tokenData);
-    let userId = tokenJson?.id;
 
-    let user = dispatch(fetchUserById(userId));
-    localStorage.setItem("authUser", JSON.stringify(user));
+    const tokenData = atob(token.split(".")[1]);
+    const tokenJson = JSON.parse(tokenData);
+    const userId = tokenJson?.id;
+
+    try {
+      const user = await dispatch(fetchUserById(userId));
+
+      if (user) {
+        localStorage.setItem("authUser", JSON.stringify(user));
+      } else {
+        console.warn("User verisi alınamadı.");
+      }
+    } catch (err) {
+      console.error("Auth sırasında hata:", err);
+    }
   };
 
   useEffect(() => {

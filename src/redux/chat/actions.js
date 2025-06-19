@@ -345,7 +345,6 @@ export const fetchAllLastMessages = (conversations) => {
 };
 
 export const sendMessage = (request) => {
-  console.log("dsadsadsa", request);
   return async (dispatch) => {
     dispatch(sendMessageRequest());
     try {

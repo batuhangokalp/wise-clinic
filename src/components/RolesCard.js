@@ -38,6 +38,7 @@ export default function RolesCard({ t }) {
   const validationSchema = Yup.object({
     role_name: Yup.string().required(t("Role name is required")),
     role_description: Yup.string().required(t("Description is required")),
+    permissions: Yup.array().min(1, "You must choose at least once."),
   });
 
   // Fetch roles on mount
