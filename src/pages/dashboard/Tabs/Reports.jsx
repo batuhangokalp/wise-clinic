@@ -5,6 +5,9 @@ import MessagesChart from "../../../components/ReportsComponent/MessagesChart";
 import EmployeeTable from "../../../components/ReportsComponent/EmployeeTable";
 
 import "../../../assets/scss/reports/reports.scss";
+import {  PERMISSIONS } from "../../../redux/role/constants";
+import PermissionWrapper from "../../../components/PermissionWrapper";
+
 
 const Reports = () => {
   const [startDate, setStartDate] = useState("");
@@ -75,6 +78,7 @@ const Reports = () => {
     if (field === "endDate") setEndDate(value);
     if (field === "channel") setChannel(value);
   };
+
   const handleApply = async () => {
     if (!startDate || !endDate) {
       alert("You must select the date range.");
@@ -111,7 +115,6 @@ const Reports = () => {
       }
 
       const data = await response.json();
-
       setStatData(data);
     } catch (error) {
       console.error("err", error);
@@ -119,6 +122,8 @@ const Reports = () => {
 
     setLoading(false);
   };
+
+
   return (
     <div className="reports-page">
       <div className="filters-section">
@@ -173,4 +178,4 @@ const Reports = () => {
   );
 };
 
-export default Reports;
+export default PermissionWrapper(Reports, PERMISSIONS.VIEW_REPORTS);

@@ -31,10 +31,12 @@ import russia from "../../assets/images/flags/russia.jpg";
 import { createSelector } from "reselect";
 import { useTabNavigation } from "../../helpers/chatUtils";
 import { useTranslation } from "react-i18next";
-import { PERMISSIONS } from "../../redux/role/constants";
+import { PERMISSION_MAP, PERMISSIONS } from "../../redux/role/constants";
 
 function LeftSidebarMenu(props) {
   const roleId = useSelector((state) => state.User.user?.role_id);
+  const roles = useSelector((state) => state.Role.roles);
+  const currentRole = roles.find((role) => role.id === roleId);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,7 +49,12 @@ function LeftSidebarMenu(props) {
     })
   );
 
+  const rawPermissions = currentRole?.permissions || [];
+  const userPermissions = rawPermissions
+    .flatMap((p) => PERMISSION_MAP[p] || [])
+    .filter(Boolean);
   const { layoutMode } = useSelector(selectLayoutProperties);
+  console.log("userPermissions", userPermissions);
 
   const mode = layoutMode === "dark" ? "light" : "dark";
 
@@ -117,28 +124,26 @@ function LeftSidebarMenu(props) {
             className="side-menu-nav nav-pills justify-content-center"
             role="tablist"
           >
-            {hasPermission(roleId, PERMISSIONS.VIEW_PROFILE_PANEL) && (
-              <>
-                <NavItem id="profile">
-                  <NavLink
-                    id="pills-user-tab"
-                    className={
-                      classnames({ active: activeTab === "profile" }) + " mb-2"
-                    }
-                    onClick={() => {
-                      toggleTab("profile");
-                    }}
-                  >
-                    <i className="ri-user-2-line"></i>
-                  </NavLink>
-                </NavItem>
-                <UncontrolledTooltip target="profile" placement="top">
-                  {t("Profile")}
-                </UncontrolledTooltip>
-              </>
-            )}
+            <>
+              <NavItem id="profile">
+                <NavLink
+                  id="pills-user-tab"
+                  className={
+                    classnames({ active: activeTab === "profile" }) + " mb-2"
+                  }
+                  onClick={() => {
+                    toggleTab("profile");
+                  }}
+                >
+                  <i className="ri-user-2-line"></i>
+                </NavLink>
+              </NavItem>
+              <UncontrolledTooltip target="profile" placement="top">
+                {t("Profile")}
+              </UncontrolledTooltip>
+            </>
 
-            {hasPermission(roleId, PERMISSIONS.VIEW_CHATS_PANEL) && (
+            {hasPermission(userPermissions, PERMISSIONS.VIEW_CHATS_PANEL) && (
               <>
                 <NavItem id="Chats">
                   <NavLink
@@ -159,7 +164,10 @@ function LeftSidebarMenu(props) {
                 </UncontrolledTooltip>
               </>
             )}
-            {hasPermission(roleId, PERMISSIONS.VIEW_CONTACTS_PANEL) && (
+            {hasPermission(
+              userPermissions,
+              PERMISSIONS.VIEW_CONTACTS_PANEL
+            ) && (
               <>
                 <NavItem id="Contacts">
                   <NavLink
@@ -180,7 +188,10 @@ function LeftSidebarMenu(props) {
                 </UncontrolledTooltip>
               </>
             )}
-            {hasPermission(roleId, PERMISSIONS.VIEW_SETTINGS_PANEL) && (
+            {hasPermission(
+              userPermissions,
+              PERMISSIONS.VIEW_SETTINGS_PANEL
+            ) && (
               <>
                 <NavItem id="Settings">
                   <NavLink
@@ -201,7 +212,10 @@ function LeftSidebarMenu(props) {
                 </UncontrolledTooltip>
               </>
             )}
-            {hasPermission(roleId, PERMISSIONS.VIEW_REPORTS_PANEL) && (
+            {hasPermission(
+              userPermissions,
+              PERMISSIONS.VIEW_REPORTS_PANEL
+            ) && (
               <>
                 <NavItem id="reports">
                   <NavLink
@@ -265,7 +279,7 @@ function LeftSidebarMenu(props) {
 
         <div className="flex-lg-column d-none d-lg-block">
           <Nav className="side-menu-nav justify-content-center">
-            <Dropdown
+            {/* <Dropdown
               nav
               isOpen={dropdownOpen2}
               className="btn-group dropup profile-user-dropdown"
@@ -328,7 +342,7 @@ function LeftSidebarMenu(props) {
               <UncontrolledTooltip target="light-dark" placement="right">
                 Dark / Light Mode
               </UncontrolledTooltip>
-            </li>
+            </li> */}
             <Dropdown
               nav
               isOpen={dropdownOpen}

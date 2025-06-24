@@ -6,7 +6,7 @@ import UsersCard from "../../../components/UsersCard";
 import DepartmentsCard from "../../../components/DepartmentsCard";
 import PositionsCard from "../../../components/PositionsCard";
 import PermissionWrapper from "./../../../components/PermissionWrapper";
-import { PERMISSIONS } from "../../../redux/role/constants";
+import { PERMISSION_MAP, PERMISSIONS } from "../../../redux/role/constants";
 import { useSelector } from "react-redux";
 import { hasPermission } from "../../../redux/actions";
 import TemplatesCard from "../../../components/TemplatesCard";
@@ -17,25 +17,39 @@ function Settings(props) {
   const [activeTab, setActiveTab] = useState("roles");
   const { t } = useTranslation();
 
+  const roles = useSelector((state) => state.Role.roles);
+  const currentRole = roles.find((role) => role.id === roleId);
+
+  const rawPermissions = currentRole?.permissions || [];
+  const userPermissions = rawPermissions.reduce((acc, p) => {
+    const perms = PERMISSION_MAP[p];
+    if (Array.isArray(perms)) {
+      acc.push(...perms);
+    }
+    return acc;
+  }, []);
+
   const toggle = (tab) => {
     if (activeTab !== tab) setActiveTab(tab);
   };
 
   useEffect(() => {
-    if (hasPermission(roleId, PERMISSIONS.VIEW_ROLES)) {
+    if (hasPermission(userPermissions, PERMISSIONS.VIEW_ROLES)) {
       setActiveTab("roles");
-    } else if (hasPermission(roleId, PERMISSIONS.VIEW_USERS)) {
+    } else if (hasPermission(userPermissions, PERMISSIONS.VIEW_USERS)) {
       setActiveTab("users");
-    } else if (hasPermission(roleId, PERMISSIONS.VIEW_DEPARTMENTS)) {
+    } else if (hasPermission(userPermissions, PERMISSIONS.VIEW_DEPARTMENTS)) {
       setActiveTab("departments");
-    } else if (hasPermission(roleId, PERMISSIONS.VIEW_POSITIONS)) {
+    } else if (hasPermission(userPermissions, PERMISSIONS.VIEW_POSITIONS)) {
       setActiveTab("positions");
-    } else if (hasPermission(roleId, PERMISSIONS.VIEW_TEMPLATES)) {
+    } else if (hasPermission(userPermissions, PERMISSIONS.VIEW_TEMPLATES)) {
       setActiveTab("templates");
-    } else if (hasPermission(roleId, PERMISSIONS.VIEW_CANNED_RESPONSES)) {
+    } else if (
+      hasPermission(userPermissions, PERMISSIONS.VIEW_CANNED_RESPONSES)
+    ) {
       setActiveTab("canned_responses");
     }
-  }, [roleId]);
+  }, []);
 
   return (
     <div className="container-fluid w-100 align-items-center">
@@ -44,7 +58,7 @@ function Settings(props) {
           <h4 className="mb-0">{t("Settings")}</h4>
           <Row className="ms-2">
             <Nav tabs>
-              {hasPermission(roleId, PERMISSIONS.VIEW_ROLES) && (
+              {hasPermission(userPermissions, PERMISSIONS.VIEW_ROLES) && (
                 <NavItem>
                   <NavLink
                     className={
@@ -60,7 +74,7 @@ function Settings(props) {
                   </NavLink>
                 </NavItem>
               )}
-              {hasPermission(roleId, PERMISSIONS.VIEW_USERS) && (
+              {hasPermission(userPermissions, PERMISSIONS.VIEW_USERS) && (
                 <NavItem>
                   <NavLink
                     className={
@@ -77,7 +91,10 @@ function Settings(props) {
                 </NavItem>
               )}
 
-              {hasPermission(roleId, PERMISSIONS.VIEW_DEPARTMENTS) && (
+              {hasPermission(
+                userPermissions,
+                PERMISSIONS.VIEW_DEPARTMENTS
+              ) && (
                 <NavItem>
                   <NavLink
                     className={
@@ -94,7 +111,7 @@ function Settings(props) {
                 </NavItem>
               )}
 
-              {hasPermission(roleId, PERMISSIONS.VIEW_POSITIONS) && (
+              {hasPermission(userPermissions, PERMISSIONS.VIEW_POSITIONS) && (
                 <NavItem>
                   <NavLink
                     className={
@@ -111,7 +128,7 @@ function Settings(props) {
                 </NavItem>
               )}
 
-              {hasPermission(roleId, PERMISSIONS.VIEW_TEMPLATES) && (
+              {hasPermission(userPermissions, PERMISSIONS.VIEW_TEMPLATES) && (
                 <NavItem>
                   <NavLink
                     className={
@@ -128,7 +145,10 @@ function Settings(props) {
                 </NavItem>
               )}
 
-              {hasPermission(roleId, PERMISSIONS.VIEW_CANNED_RESPONSES) && (
+              {hasPermission(
+                userPermissions,
+                PERMISSIONS.VIEW_CANNED_RESPONSES
+              ) && (
                 <NavItem>
                   <NavLink
                     className={
@@ -152,32 +172,35 @@ function Settings(props) {
       <Row>
         <div>
           <TabContent activeTab={activeTab}>
-            {hasPermission(roleId, PERMISSIONS.VIEW_ROLES) && (
+            {hasPermission(userPermissions, PERMISSIONS.VIEW_ROLES) && (
               <TabPane tabId="roles" id="pills-roles">
                 <RolesCard t={t} />
               </TabPane>
             )}
-            {hasPermission(roleId, PERMISSIONS.VIEW_USERS) && (
+            {hasPermission(userPermissions, PERMISSIONS.VIEW_USERS) && (
               <TabPane tabId="users" id="pills-users">
                 <UsersCard t={t} />
               </TabPane>
             )}
-            {hasPermission(roleId, PERMISSIONS.VIEW_DEPARTMENTS) && (
+            {hasPermission(userPermissions, PERMISSIONS.VIEW_DEPARTMENTS) && (
               <TabPane tabId="departments" id="pills-departmens">
                 <DepartmentsCard t={t} />
               </TabPane>
             )}
-            {hasPermission(roleId, PERMISSIONS.VIEW_POSITIONS) && (
+            {hasPermission(userPermissions, PERMISSIONS.VIEW_POSITIONS) && (
               <TabPane tabId="positions" id="pills-positions">
                 <PositionsCard t={t} />
               </TabPane>
             )}
-            {hasPermission(roleId, PERMISSIONS.VIEW_TEMPLATES) && (
+            {hasPermission(userPermissions, PERMISSIONS.VIEW_TEMPLATES) && (
               <TabPane tabId="templates" id="pills-templates">
                 <TemplatesCard t={t} />
               </TabPane>
             )}
-            {hasPermission(roleId, PERMISSIONS.VIEW_CANNED_RESPONSES) && (
+            {hasPermission(
+              userPermissions,
+              PERMISSIONS.VIEW_CANNED_RESPONSES
+            ) && (
               <TabPane tabId="canned_responses" id="pills-canned_responses">
                 <CannedResponsesCard t={t} />
               </TabPane>
@@ -189,4 +212,4 @@ function Settings(props) {
   );
 }
 
-export default PermissionWrapper(Settings, PERMISSIONS.VIEW_SETTINGS_PANEL);
+export default PermissionWrapper(Settings, PERMISSIONS.VIEW_SETTINGS);

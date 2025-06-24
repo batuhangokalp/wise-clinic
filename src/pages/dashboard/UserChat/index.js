@@ -34,6 +34,7 @@ import { throttle } from "lodash";
 
 //actions
 import {
+  hasPermission,
   openUserSidebar,
   setChatMessages,
   setConversations,
@@ -49,10 +50,16 @@ import RenderVideo from "./RenderVideo";
 import MessageStatus from "./MessageStatus";
 import RenderPDFFirstPage from "./RenderPDFFirstPage";
 import RenderFilePreview from "./RenderFilePreview";
+import { PERMISSION_MAP, PERMISSIONS } from "../../../redux/role/constants";
+import PermissionWrapper from "../../../components/PermissionWrapper";
 
 function UserChat(props) {
   const dispatch = useDispatch();
   const SOCKET_SERVER_URL = `${process.env.REACT_APP_SOCKET_SERVER_URL}`;
+  const roleId = useSelector((state) => state.User.user?.role_id);
+  const roles = useSelector((state) => state.Role.roles);
+  const currentUser = useSelector((state) => state.User.user);
+  const currentRole = roles.find((role) => role.id === roleId);
   const ref = useRef();
   const chatEndRef = useRef(null);
   const [modal, setModal] = useState(false);
@@ -450,6 +457,36 @@ function UserChat(props) {
       scrollableElement?.removeEventListener("scroll", handleScroll);
     };
   }, [handleScroll]);
+
+  const rawPermissions = currentRole?.permissions || [];
+  const userPermissions = rawPermissions
+    .flatMap((p) => PERMISSION_MAP[p] || [])
+    .filter(Boolean);
+
+  const canViewAllChats = hasPermission(
+    userPermissions,
+    PERMISSIONS.VIEW_ALL_CHATS
+  );
+  const canViewAssignedChats = hasPermission(
+    userPermissions,
+    PERMISSIONS.VIEW_ASSIGNED_CHATS
+  );
+  const activeChat = props.activeConversation;
+
+  const canAccessChat =
+    canViewAllChats ||
+    (canViewAssignedChats && activeChat?.assigned_user_id === currentUser?.id);
+
+  if (!canAccessChat) {
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "100%" }}
+      >
+        <p className="text-muted"></p>
+      </div>
+    );
+  }
 
   return (
     <div className="user-chat w-100 overflow-hidden">
@@ -873,7 +910,16 @@ const mapStateToProps = (state) => {
     conversations,
   };
 };
+const requiredPermissions = [
+  PERMISSIONS.VIEW_ASSIGNED_CHATS,
+  PERMISSIONS.VIEW_ALL_CHATS,
+];
 
-export default withRouter(
-  connect(mapStateToProps, { openUserSidebar, setChatMessages })(UserChat)
-);
+const ConnectedUserChat = connect(mapStateToProps, {
+  openUserSidebar,
+  setChatMessages,
+})(UserChat);
+
+const RoutedUserChat = withRouter(ConnectedUserChat);
+
+export default PermissionWrapper(RoutedUserChat, requiredPermissions);

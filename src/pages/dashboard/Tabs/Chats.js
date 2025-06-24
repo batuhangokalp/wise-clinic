@@ -24,9 +24,15 @@ import {
   fetchAllLastMessages,
   fetchMessagesByConversationId,
   setChatMessages,
+  hasPermission,
 } from "../../../redux/actions";
-import { ROLES } from "../../../redux/role/constants";
+import {
+  PERMISSION_MAP,
+  PERMISSIONS,
+  ROLES,
+} from "../../../redux/role/constants";
 import { io } from "socket.io-client";
+import PermissionWrapper from "../../../components/PermissionWrapper";
 
 // Create a wrapper functional component
 const ChatsWrapper = (props) => {
@@ -34,6 +40,8 @@ const ChatsWrapper = (props) => {
   const API_URL = `${process.env.REACT_APP_API_URL}`;
 
   const chatMessages = useSelector((state) => state.Chat.chatMessages);
+  const roleId = useSelector((state) => state.User.user?.role_id);
+  const roles = useSelector((state) => state.Role.roles);
   const dispatch = useDispatch();
   const [socket, setSocket] = useState(null);
 
@@ -120,6 +128,8 @@ const ChatsWrapper = (props) => {
       chatMessages={chatMessages}
       dispatch={dispatch}
       API_URL={API_URL}
+      roleId={roleId}
+      roles={roles}
     />
   );
 };
@@ -229,19 +239,47 @@ class Chats extends Component {
   }
 
   render() {
-    const { conversations, user } = this.props;
+    const { conversations, user, roles, roleId } = this.props;
     const search = this.state.searchChat.toLowerCase();
+
+    const currentRole = roles.find((role) => role.id === roleId);
+
+    const rawPermissions = currentRole?.permissions || [];
+    const userPermissions = rawPermissions
+      .flatMap((p) => PERMISSION_MAP[p] || [])
+      .filter(Boolean);
+
+    const canViewAllChats = hasPermission(
+      userPermissions,
+      PERMISSIONS.VIEW_ALL_CHATS
+    );
+    const canViewAssignedChats = hasPermission(
+      userPermissions,
+      PERMISSIONS.VIEW_ASSIGNED_CHATS
+    );
 
     let filteredConversations = conversations.filter((conversation) => {
       const matchesSearch = conversation?.contact_name
         ?.toLowerCase()
         ?.includes(search);
-      const matchesRole =
-        user?.role_id === ROLES.User
-          ? conversation?.assigned_user_id === user?.id
-          : true;
-      return matchesSearch && matchesRole;
+
+      const matchesPermission = canViewAllChats
+        ? true
+        : canViewAssignedChats
+        ? conversation?.assigned_user_id === user?.id
+        : false;
+
+      return matchesSearch && matchesPermission;
     });
+
+    const hasPermissionChat = hasPermission(userPermissions, [
+      PERMISSIONS.VIEW_ALL_CHATS,
+      PERMISSIONS.VIEW_ASSIGNED_CHATS,
+    ]);
+
+    if (!hasPermissionChat) {
+      return null;
+    }
 
     return (
       <React.Fragment>
@@ -426,7 +464,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, {
+const connectedComponent = connect(mapStateToProps, {
   setconversationNameInOpenChat,
   fetchConversations,
   setActiveConversationId,
@@ -436,6 +474,13 @@ export default connect(mapStateToProps, {
   fetchMessagesByConversationId,
   setChatMessages,
 })(ChatsWrapper);
+
+const requiredPermissions = [
+  PERMISSIONS.VIEW_ASSIGNED_CHATS,
+  PERMISSIONS.VIEW_ALL_CHATS,
+];
+
+export default PermissionWrapper(connectedComponent, requiredPermissions);
 
 ChatsWrapper.propTypes = {
   fetchMessagesByConversationId: PropTypes.func.isRequired,

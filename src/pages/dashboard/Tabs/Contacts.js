@@ -17,10 +17,11 @@ import {
   resetContactWarnings,
   updateContact,
 } from "../../../redux/actions";
-import { Formik, Field, Form as FormikForm } from "formik";
 import * as Yup from "yup";
 import AddContactModal from "../../../components/AddContactModal";
 import UpdateContactModal from "../../../components/UpdateContactModal";
+import { PERMISSIONS } from "../../../redux/role/constants";
+import PermissionWrapper from "../../../components/PermissionWrapper";
 
 const Contacts = (props) => {
   const dispatch = useDispatch();
@@ -249,4 +250,7 @@ const mapStateToProps = (state) => {
   return { contacts, error, success };
 };
 
-export default connect(mapStateToProps, null)(withTranslation()(Contacts));
+export default PermissionWrapper(
+  connect(mapStateToProps, null)(withTranslation()(Contacts)),
+  PERMISSIONS.VIEW_CONTACTS
+);

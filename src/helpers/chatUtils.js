@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, } from "react-redux";
 import { setActiveTab } from "../redux/actions";
 
 export const useChatUrlParams = (
@@ -89,7 +89,14 @@ export const useTabNavigation = () => {
   const location = useLocation();
 
   const DEFAULT_TAB = "profile";
-  const VALID_TABS = ["chat", "group", "contacts", "settings", "profile", "reports"]; // Add all valid tab IDs
+  const VALID_TABS = [
+    "chat",
+    "group",
+    "contacts",
+    "settings",
+    "profile",
+    "reports",
+  ]; // Add all valid tab IDs
 
   const toggleTab = (tab) => {
     if (VALID_TABS.includes(tab)) {

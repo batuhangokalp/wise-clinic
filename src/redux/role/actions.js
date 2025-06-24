@@ -275,15 +275,39 @@ export const fetchPermissionList = () => {
   };
 };
 
-export const hasPermission = (roleId, permission) => {
-  const role = ROLES[roleId]; // Map roleId to role name
-  return (
-    ROLE_PERMISSIONS[role]?.includes(permission) ||
-    ROLE_PERMISSIONS[role]?.includes(PERMISSIONS.VIEW_ALL_COMPONENTS)
-  );
-};
-
-// export const hasPermission = (roleId, permissions, permissionToCheck) => {
-//   if (!Array.isArray(permissions)) return false;
-//   return permissions.includes(permissionToCheck);
+// export const hasPermission = (roleId, permission) => {
+//   console.log("lkdjskfdskfds", roleId, permission);
+//   const role = ROLES[roleId]; // Map roleId to role name
+//   return (
+//     ROLE_PERMISSIONS[role]?.includes(permission) ||
+//     ROLE_PERMISSIONS[role]?.includes(PERMISSIONS.VIEW_ALL_COMPONENTS)
+//   );
 // };
+
+export const hasPermission = (permissions, permissionToCheck) => {
+  if (!Array.isArray(permissions)) {
+    console.warn("Permissions is not an array:", permissions);
+    return false;
+  }
+
+  if (!permissionToCheck) {
+    console.warn("Permission to check is not provided");
+    return false;
+  }
+
+  // Eğer dizi ise, en az bir izin eşleşiyor mu diye kontrol et
+  if (Array.isArray(permissionToCheck)) {
+    return permissionToCheck.some((perm) => permissions.includes(perm));
+  }
+
+  // String ise direkt kontrol et
+  if (typeof permissionToCheck === "string") {
+    return permissions.includes(permissionToCheck);
+  }
+
+  console.warn(
+    "Permission to check is not a string or array:",
+    permissionToCheck
+  );
+  return false;
+};
