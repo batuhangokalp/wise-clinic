@@ -54,7 +54,6 @@ function LeftSidebarMenu(props) {
     .flatMap((p) => PERMISSION_MAP[p] || [])
     .filter(Boolean);
   const { layoutMode } = useSelector(selectLayoutProperties);
-  console.log("userPermissions", userPermissions);
 
   const mode = layoutMode === "dark" ? "light" : "dark";
 
