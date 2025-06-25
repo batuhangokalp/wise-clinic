@@ -35,9 +35,9 @@ function ChatInput(props) {
   const chatFile = useSelector((state) => state.Chat.chatFile);
   useEffect(() => {
     if (props.isAiRes) {
-      setInputValue(props.aiResponse);
+      setInputValue(props.anotherAiResponse || props.aiResponse);
     }
-  }, [props.isAiRes, props.aiResponse]);
+  }, [props.isAiRes, props.aiResponse, props.anotherAiResponse]);
 
   const toggle = () => setisOpen(!isOpen);
   const toggleTemplatePicker = () =>
@@ -95,7 +95,6 @@ function ChatInput(props) {
     }
   };
 
-
   const [showSendTemplateMessageModal, setShowSendTemplateMessageModal] =
     useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -126,7 +125,6 @@ function ChatInput(props) {
         }}
       />
       <Form onSubmit={async (e) => await onaddMessage(e, textMessage)}>
-
         <Row className="g-0 mt-2">
           <Col>
             <div>

@@ -53,6 +53,8 @@ import RenderFilePreview from "./RenderFilePreview";
 import { PERMISSION_MAP, PERMISSIONS } from "../../../redux/role/constants";
 import PermissionWrapper from "../../../components/PermissionWrapper";
 import axios from "axios";
+import AiSuggestionModal from "./AiSuggestionModal";
+import AIPromptInputModal from "./AIPromptInputModal";
 
 function UserChat(props) {
   const dispatch = useDispatch();
@@ -76,6 +78,11 @@ function UserChat(props) {
   const [isAiRes, setIsAiRes] = useState(false);
   const [aiResponse, setAiResponse] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [currentChat, setCurrentChat] = useState(null);
+  const [showPromptModal, setShowPromptModal] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState("");
+  const [anotherAiResponse, setAnotherAiResponse] = useState(null);
 
   useEffect(() => {
     const fetchBitrixData = async () => {
@@ -493,32 +500,68 @@ function UserChat(props) {
   }
 
   const handleAiClick = async (chat) => {
+    setCurrentChat(chat);
+    setAiModalOpen(true);
+    setAiLoading(true);
     try {
-      setAiLoading(true);
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/api/ai/suggestions`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            message: chat.message_content,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: chat.message_content }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP hata: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP hata: ${response.status}`);
 
       const data = await response.json();
-      setIsAiRes(true);
       setAiResponse(data.suggestion);
     } catch (error) {
       console.error("AI isteği sırasında hata oluştu:", error);
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const handleAccept = () => {
+    setIsAiRes(true);
+    setAiModalOpen(false);
+    setCurrentChat(null);
+  };
+
+  const handleReject = () => {
+    setShowPromptModal(true);
+  };
+
+  const sendCustomPrompt = async () => {
+    if (!currentChat || !customPrompt.trim()) return;
+
+    setAiLoading(true);
+    setShowPromptModal(false);
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/ai/regenerate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            originalMessage: currentChat.message_content,
+            newPrompt: customPrompt,
+            initialSuggestion: aiResponse,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error(`HTTP hata: ${response.status}`);
+      const data = await response.json();
+      setAnotherAiResponse(data.regenerated);
+    } catch (error) {
+      console.error("Alternatif AI isteği sırasında hata oluştu:", error);
+    } finally {
+      setAiLoading(false);
+      setCustomPrompt("");
     }
   };
 
@@ -982,12 +1025,29 @@ function UserChat(props) {
               aiResponse={aiResponse}
               isAiRes={isAiRes}
               setIsAiRes={setIsAiRes}
+              anotherAiResponse={anotherAiResponse}
             />
           </div>
 
           <UserProfileSidebar
             activeConversation={props.activeConversation}
             bitrixData={bitrixData}
+          />
+          <AiSuggestionModal
+            isOpen={aiModalOpen}
+            suggestion={aiResponse}
+            anotherSuggestion={anotherAiResponse}
+            loading={aiLoading}
+            onAccept={handleAccept}
+            onReject={handleReject}
+          />
+
+          <AIPromptInputModal
+            showPromptModal={showPromptModal}
+            setShowPromptModal={setShowPromptModal}
+            customPrompt={customPrompt}
+            setCustomPrompt={setCustomPrompt}
+            sendCustomPrompt={sendCustomPrompt}
           />
         </div>
       )}
