@@ -12,7 +12,6 @@ import {
   Form,
 } from "reactstrap";
 import EmojiPicker from "emoji-picker-react";
-import SuggestionInput from "./SuggestionInput";
 import TemplatePicker from "./TemplatePicker";
 import SendTemplateMessageModal from "./SendTemplateMessageModal";
 import { setChatFile } from "../../../redux/actions";
@@ -31,7 +30,14 @@ function ChatInput(props) {
   const [isTemplatePickerOpen, setisTemplatePickerOpen] = useState(false);
   const [fileImage, setfileImage] = useState("");
   const [audioMessage, setAudioMessage] = useState(null);
+  const [inputValue, setInputValue] = useState("");
+
   const chatFile = useSelector((state) => state.Chat.chatFile);
+  useEffect(() => {
+    if (props.isAiRes) {
+      setInputValue(props.aiResponse);
+    }
+  }, [props.isAiRes, props.aiResponse]);
 
   const toggle = () => setisOpen(!isOpen);
   const toggleTemplatePicker = () =>
@@ -45,10 +51,6 @@ function ChatInput(props) {
   };
 
   //function for text input value change
-  const handleChange = (e) => {
-    dispatch(setTextMessage(e.target.value));
-  };
-
   const onEmojiClick = (event) => {
     dispatch(setTextMessage(textMessage + event.emoji));
   };
@@ -67,8 +69,10 @@ function ChatInput(props) {
   const onaddMessage = async (e, textMessage) => {
     e.preventDefault();
 
-    if (textMessage && textMessage.trim() !== "") {
-      await props.onaddMessage(textMessage, "textMessage");
+    if (inputValue !== "") {
+      await props.onaddMessage(inputValue, "textMessage");
+      setInputValue("");
+      props.setIsAiRes(false);
     }
 
     if (chatFile) {
@@ -91,18 +95,6 @@ function ChatInput(props) {
     }
   };
 
-  const definedSuggestions = [
-    "Hello, how can I help you? Hello, how can I help you?",
-    "Thank you for reaching out!",
-    "I will get back to you soon.",
-  ];
-
-  const [suggestions, setsuggestions] = useState(definedSuggestions);
-
-  const handleSuggestionClick = (suggestion) => {
-    dispatch(setTextMessage(suggestion));
-    setsuggestions([]);
-  };
 
   const [showSendTemplateMessageModal, setShowSendTemplateMessageModal] =
     useState(false);
@@ -115,6 +107,15 @@ function ChatInput(props) {
     dispatch(setTextMessage(template?.content));
   };
 
+  const getRowCount = (text) => {
+    const length = text?.length || 0;
+
+    if (length > 500) return 5;
+    if (length > 400) return 4;
+    if (length > 300) return 3;
+    return 1;
+  };
+
   return (
     <div className="chat-input-section ps-3 pe-3 pb-3  ps-lg-4  pe-lg-4  pb-lg-4 border-top mb-0 ">
       <SendTemplateMessageModal
@@ -125,24 +126,17 @@ function ChatInput(props) {
         }}
       />
       <Form onSubmit={async (e) => await onaddMessage(e, textMessage)}>
-        {/*suggestions?.length > 0 && (
-                    <div className='chat-suggestion-section'>
-                        <SuggestionInput
-                            handleSuggestionClick={handleSuggestionClick}
-                            suggestions={suggestions}
-                        />
-                    </div>
-                )*/}
 
         <Row className="g-0 mt-2">
           <Col>
             <div>
               <Input
-                type="text"
-                value={textMessage}
-                onChange={handleChange}
+                type="textarea"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
                 className="form-control form-control-lg bg-light border-light"
                 placeholder="Enter Message..."
+                rows={getRowCount(inputValue)}
               />
             </div>
           </Col>

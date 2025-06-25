@@ -52,6 +52,7 @@ import RenderPDFFirstPage from "./RenderPDFFirstPage";
 import RenderFilePreview from "./RenderFilePreview";
 import { PERMISSION_MAP, PERMISSIONS } from "../../../redux/role/constants";
 import PermissionWrapper from "../../../components/PermissionWrapper";
+import axios from "axios";
 
 function UserChat(props) {
   const dispatch = useDispatch();
@@ -72,6 +73,9 @@ function UserChat(props) {
   const chatMessages = useSelector((state) => state.Chat?.chatMessages);
   const [socket, setSocket] = useState(null);
   const [bitrixData, setBitrixData] = useState([]);
+  const [isAiRes, setIsAiRes] = useState(false);
+  const [aiResponse, setAiResponse] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
     const fetchBitrixData = async () => {
@@ -488,266 +492,156 @@ function UserChat(props) {
     );
   }
 
+  const handleAiClick = async (chat) => {
+    try {
+      setAiLoading(true);
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/ai/suggestions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: chat.message_content,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP hata: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setIsAiRes(true);
+      setAiResponse(data.suggestion);
+    } catch (error) {
+      console.error("AI isteği sırasında hata oluştu:", error);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="user-chat w-100 overflow-hidden">
-      <div className="d-lg-flex">
+      {aiLoading ? (
         <div
-          className={
-            props.userSidebar
-              ? "w-70 overflow-hidden position-relative"
-              : "w-100 overflow-hidden position-relative"
-          }
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.4)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+            flexDirection: "column",
+          }}
         >
-          {/* render user head */}
-          <UserHead activeConversation={props.activeConversation} />
-
-          <SimpleBar
-            onScroll={() => {
-              const scrollTop = ref.current.getScrollElement().scrollTop;
-              if (scrollTop === 0) alert("TOP");
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "40px 0",
             }}
-            style={{ maxHeight: "100%", overflow: "auto" }}
-            ref={ref}
-            className="chat-conversation p-5 p-lg-4"
-            id="messages"
           >
-            <ul className="list-unstyled mb-0">
-              {chatMessages &&
-                chatMessages?.map((chat, key) =>
-                  chat?.isToday && chat?.isToday === true ? (
-                    <li key={chat.id}>
-                      <div className="chat-day-title">
-                        <span className="title">Today</span>
-                      </div>
-                    </li>
-                  ) : chat?.isGroup === true ? (
-                    <li
-                      key={chat.id}
-                      className={chat?.sender_type === "user" ? "right" : ""}
-                    >
-                      <div className="conversation-list">
-                        <div className="chat-avatar">
-                          {chat?.sender_type === "user" ? (
-                            <div className="chat-user-img align-self-center me-3">
-                              <div className="avatar-xs">
-                                <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                  {props.activeConversation?.contact_name?.charAt(
-                                    0
-                                  ) ?? "A"}
-                                </span>
-                              </div>
-                            </div>
-                          ) : chat?.profilePicture === null ? (
-                            <div className="chat-user-img align-self-center me-3">
-                              <div className="avatar-xs">
-                                <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                  {chat?.userName && chat?.userName.charAt(0)}
-                                </span>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="chat-user-img align-self-center me-3">
-                              <div className="avatar-xs">
-                                <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                  {props.activeConversation?.contact_name?.charAt(
-                                    0
-                                  ) ?? "A"}
-                                </span>
-                              </div>
-                            </div>
-                          )}
+            <i
+              className="ri-robot-2-line ri-spin"
+              style={{
+                fontSize: "60px",
+                color: "#cfd8dc",
+              }}
+            ></i>
+            <div
+              style={{
+                marginTop: "12px",
+                color: "#cfd8dc",
+                fontSize: "24px",
+              }}
+            >
+              Waiting for AI reply...
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="d-lg-flex">
+          <div
+            className={
+              props.userSidebar
+                ? "w-70 overflow-hidden position-relative"
+                : "w-100 overflow-hidden position-relative"
+            }
+          >
+            {/* render user head */}
+            <UserHead activeConversation={props.activeConversation} />
+
+            <SimpleBar
+              onScroll={() => {
+                const scrollTop = ref.current.getScrollElement().scrollTop;
+                if (scrollTop === 0) alert("TOP");
+              }}
+              style={{ maxHeight: "100%", overflow: "auto" }}
+              ref={ref}
+              className="chat-conversation p-5 p-lg-4"
+              id="messages"
+            >
+              <ul className="list-unstyled mb-0">
+                {chatMessages &&
+                  chatMessages?.map((chat, key) =>
+                    chat?.isToday && chat?.isToday === true ? (
+                      <li key={chat.id}>
+                        <div className="chat-day-title">
+                          <span className="title">Today</span>
                         </div>
-
-                        <div className="user-chat-content">
-                          <div className="ctext-wrap">
-                            <div className="ctext-wrap-content">
-                              {!chat?.message_content?.startsWith("https") && (
-                                <div>{chat.message_content}</div>
-                              )}
-                              {FileTypeId.Image?.includes(
-                                chat?.file_type_id
-                              ) && <RenderImage url={chat?.file_path} />}
-
-                              {FileTypeId.Document.includes(
-                                Number(chat?.file_type_id)
-                              ) &&
-                                (chat?.file_path?.endsWith("pdf") ? (
-                                  <RenderPDFFirstPage url={chat?.file_path} />
-                                ) : (
-                                  <RenderFilePreview url={chat?.file_path} />
-                                ))}
-
-                              {chat?.file_type_id === FileTypeId.Video && (
-                                //file input component
-                                <RenderVideo url={chat?.file_path} />
-                              )}
-
-                              {FileTypeId.Audio?.includes(
-                                chat?.file_type_id
-                              ) && (
-                                //file input component
-                                <RenderAudio url={chat?.file_path} />
-                              )}
-
-                              {chat?.isTyping && (
-                                <p className="mb-0">
-                                  typing
-                                  <span className="animate-typing">
-                                    <span className="dot ms-1"></span>
-                                    <span className="dot ms-1"></span>
-                                    <span className="dot ms-1"></span>
+                      </li>
+                    ) : chat?.isGroup === true ? (
+                      <li
+                        key={chat.id}
+                        className={chat?.sender_type === "user" ? "right" : ""}
+                      >
+                        <div className="conversation-list">
+                          <div className="chat-avatar">
+                            {chat?.sender_type === "user" ? (
+                              <div className="chat-user-img align-self-center me-3">
+                                <div className="avatar-xs">
+                                  <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                    {props.activeConversation?.contact_name?.charAt(
+                                      0
+                                    ) ?? "A"}
                                   </span>
-                                </p>
-                              )}
-                              {!chat?.isTyping && (
-                                <p className="chat-time mb-0">
-                                  <i className="ri-time-line align-middle"></i>{" "}
-                                  <span className="align-middle">
-                                    {chat?.time}
+                                </div>
+                              </div>
+                            ) : chat?.profilePicture === null ? (
+                              <div className="chat-user-img align-self-center me-3">
+                                <div className="avatar-xs">
+                                  <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                    {chat?.userName && chat?.userName.charAt(0)}
                                   </span>
-                                </p>
-                              )}
-                            </div>
-                            {!chat?.isTyping && (
-                              <UncontrolledDropdown className="align-self-start">
-                                <DropdownToggle
-                                  tag="a"
-                                  className="text-muted ms-1"
-                                >
-                                  <i className="ri-more-2-fill"></i>
-                                </DropdownToggle>
-                                <DropdownMenu>
-                                  <DropdownItem>
-                                    {t("Copy")}{" "}
-                                    <i className="ri-file-copy-line float-end text-muted"></i>
-                                  </DropdownItem>
-                                  <DropdownItem>
-                                    {t("Save")}{" "}
-                                    <i className="ri-save-line float-end text-muted"></i>
-                                  </DropdownItem>
-                                  <DropdownItem onClick={toggle}>
-                                    Forward{" "}
-                                    <i className="ri-chat-forward-line float-end text-muted"></i>
-                                  </DropdownItem>
-                                  <DropdownItem
-                                    onClick={() => deleteMessage(chat?.id)}
-                                  >
-                                    Delete{" "}
-                                    <i className="ri-delete-bin-line float-end text-muted"></i>
-                                  </DropdownItem>
-                                </DropdownMenu>
-                              </UncontrolledDropdown>
-                            )}
-                          </div>
-                          {
-                            <div className="conversation-name">
-                              {chat?.sender_type === "user"
-                                ? props.activeConversation?.contact_name
-                                : chat?.contact_name}
-                            </div>
-                          }
-                        </div>
-                      </div>
-                    </li>
-                  ) : (
-                    <li
-                      key={key}
-                      className={chat?.sender_type === "user" ? "right" : ""}
-                    >
-                      <div className="conversation-list">
-                        {
-                          //logic for display user name and profile only once, if current and last messaged sent by same receiver
-                          chatMessages[key + 1] ? (
-                            chatMessages[key].sender_type ===
-                            chatMessages[key + 1].sender_type ? (
-                              <div className="chat-avatar">
-                                <div className="blank-div"></div>
+                                </div>
                               </div>
                             ) : (
-                              <div className="chat-avatar">
-                                {chat?.sender_type === "user" ? (
-                                  <div className="chat-user-img align-self-center me-3">
-                                    <div className="avatar-xs">
-                                      <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                        {props.user?.name?.charAt(0) ?? "A"}{" "}
-                                        {/* User Name Initials */}
-                                      </span>
-                                    </div>
-                                  </div>
-                                ) : chat?.profilePicture === null ? (
-                                  <div className="chat-user-img align-self-center me-3">
-                                    <div className="avatar-xs">
-                                      <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                        {props.user?.name?.charAt(0) ?? "A"}
-                                      </span>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="chat-user-img align-self-center me-3">
-                                    <div className="avatar-xs">
-                                      <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                        {props.activeConversation?.contact_name?.charAt(
-                                          0
-                                        ) ?? "A"}{" "}
-                                        {/*other user */}
-                                      </span>
-                                    </div>
-                                  </div>
-                                )}
+                              <div className="chat-user-img align-self-center me-3">
+                                <div className="avatar-xs">
+                                  <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                    {props.activeConversation?.contact_name?.charAt(
+                                      0
+                                    ) ?? "A"}
+                                  </span>
+                                </div>
                               </div>
-                            )
-                          ) : (
-                            <div className="chat-avatar">
-                              {chat?.sender_type === "user" ? (
-                                <div className="chat-user-img align-self-center me-3">
-                                  <div className="avatar-xs">
-                                    <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                      {props.user?.name?.charAt(0) ?? "A"}{" "}
-                                      {/* User Name Initials last me*/}
-                                    </span>
-                                  </div>
-                                </div>
-                              ) : chat?.profilePicture === null ? (
-                                <div className="chat-user-img align-self-center me-3">
-                                  <div className="avatar-xs">
-                                    <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                      {props.activeConversation?.contact_name?.charAt(
-                                        0
-                                      ) ?? "A"}
-                                    </span>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="chat-user-img align-self-center me-3">
-                                  <div className="avatar-xs">
-                                    <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                      {props.activeConversation?.contact_name?.charAt(
-                                        0
-                                      ) ?? "A"}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )
-                        }
+                            )}
+                          </div>
 
-                        <div
-                          className="user-chat-content"
-                          style={{ position: "relative" }}
-                        >
-                          <div className="ctext-wrap mb-3">
-                            <div className="ctext-wrap-content">
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  gap: "8px",
-                                  alignSelf: "flex-start",
-                                  textAlign: "left",
-                                }}
-                              >
-                                {/* Görsel varsa üstte */}
+                          <div className="user-chat-content">
+                            <div className="ctext-wrap">
+                              <div className="ctext-wrap-content">
+                                {!chat?.message_content?.startsWith(
+                                  "https"
+                                ) && <div>{chat.message_content}</div>}
                                 {FileTypeId.Image?.includes(
                                   chat?.file_type_id
                                 ) && <RenderImage url={chat?.file_path} />}
@@ -761,138 +655,342 @@ function UserChat(props) {
                                     <RenderFilePreview url={chat?.file_path} />
                                   ))}
 
-                                {/* Video varsa */}
-                                {FileTypeId.Video.includes(
-                                  Number(chat?.file_type_id)
-                                ) && <RenderVideo url={chat?.file_path} />}
+                                {chat?.file_type_id === FileTypeId.Video && (
+                                  //file input component
+                                  <RenderVideo url={chat?.file_path} />
+                                )}
 
-                                {/* Ses varsa */}
                                 {FileTypeId.Audio?.includes(
                                   chat?.file_type_id
-                                ) && <RenderAudio url={chat?.file_path} />}
+                                ) && (
+                                  //file input component
+                                  <RenderAudio url={chat?.file_path} />
+                                )}
 
-                                {/* Text mesaj (https ile başlamıyorsa) */}
-                                {!chat?.message_content?.startsWith(
-                                  "https"
-                                ) && <div>{chat.message_content}</div>}
-                              </div>
-
-                              {chat?.isTyping && (
-                                <p className="mb-0">
-                                  typing
-                                  <span className="animate-typing">
-                                    <span className="dot ms-1"></span>
-                                    <span className="dot ms-1"></span>
-                                    <span className="dot ms-1"></span>
-                                  </span>
-                                </p>
-                              )}
-                            </div>
-                            {!chat?.isTyping && (
-                              <>
-                                <br />
-                                {chat?.sender_type === "user" ? (
-                                  <p
-                                    className="chat-time mb-0"
-                                    style={{ zIndex: 1 }}
-                                  >
-                                    <i className="ri-time-line align-middle"></i>{" "}
-                                    <span className="align-middle">
-                                      {showChatMessageTime(chat?.created_at)}
-
-                                      <MessageStatus status={chat?.status} />
-                                    </span>
-                                  </p>
-                                ) : (
-                                  <p
-                                    className="chat-time mb-0"
-                                    style={{
-                                      position: "absolute",
-                                      right: "25px",
-                                    }}
-                                  >
-                                    <i className="ri-time-line align-middle"></i>{" "}
-                                    <span className="align-middle">
-                                      {showChatMessageTime(chat?.created_at)}
+                                {chat?.isTyping && (
+                                  <p className="mb-0">
+                                    typing
+                                    <span className="animate-typing">
+                                      <span className="dot ms-1"></span>
+                                      <span className="dot ms-1"></span>
+                                      <span className="dot ms-1"></span>
                                     </span>
                                   </p>
                                 )}
-                              </>
-                            )}
-                            {!chat?.isTyping && (
-                              <UncontrolledDropdown className="align-self-start ms-1">
-                                <DropdownToggle tag="a" className="text-muted">
-                                  <i className="ri-more-2-fill"></i>
-                                </DropdownToggle>
-                                <DropdownMenu>
-                                  {chat?.file_type_id ? (
+                                {!chat?.isTyping && (
+                                  <p className="chat-time mb-0">
+                                    <i className="ri-time-line align-middle"></i>{" "}
+                                    <span className="align-middle">
+                                      {chat?.time}
+                                    </span>
+                                  </p>
+                                )}
+                              </div>
+                              {!chat?.isTyping && (
+                                <UncontrolledDropdown className="align-self-start">
+                                  <DropdownToggle
+                                    tag="a"
+                                    className="text-muted ms-1"
+                                  >
+                                    <i className="ri-more-2-fill"></i>
+                                  </DropdownToggle>
+                                  <DropdownMenu>
+                                    <DropdownItem>
+                                      {t("Copy")}{" "}
+                                      <i className="ri-file-copy-line float-end text-muted"></i>
+                                    </DropdownItem>
+                                    <DropdownItem>
+                                      {t("Save")}{" "}
+                                      <i className="ri-save-line float-end text-muted"></i>
+                                    </DropdownItem>
+                                    <DropdownItem onClick={toggle}>
+                                      Forward{" "}
+                                      <i className="ri-chat-forward-line float-end text-muted"></i>
+                                    </DropdownItem>
                                     <DropdownItem
-                                      onClick={() =>
-                                        downloadFile(chat?.file_path)
-                                      }
+                                      onClick={() => deleteMessage(chat?.id)}
                                     >
-                                      {t("Download")}{" "}
-                                      <i className="ri-file-download-line float-end text-muted"></i>
+                                      Delete{" "}
+                                      <i className="ri-delete-bin-line float-end text-muted"></i>
                                     </DropdownItem>
-                                  ) : (
-                                    <DropdownItem disabled>
-                                      No options
-                                    </DropdownItem>
-                                  )}
-                                </DropdownMenu>
-                              </UncontrolledDropdown>
-                            )}
+                                  </DropdownMenu>
+                                </UncontrolledDropdown>
+                              )}
+                            </div>
+                            {
+                              <div className="conversation-name">
+                                {chat?.sender_type === "user"
+                                  ? props.activeConversation?.contact_name
+                                  : chat?.contact_name}
+                              </div>
+                            }
                           </div>
-                          {chatMessages[key + 1] ? (
-                            chatMessages[key].sender_type ===
-                            chatMessages[key + 1].sender_type ? null : (
+                        </div>
+                      </li>
+                    ) : (
+                      <li
+                        key={key}
+                        className={chat?.sender_type === "user" ? "right" : ""}
+                      >
+                        <div className="conversation-list">
+                          {
+                            //logic for display user name and profile only once, if current and last messaged sent by same receiver
+                            chatMessages[key + 1] ? (
+                              chatMessages[key].sender_type ===
+                              chatMessages[key + 1].sender_type ? (
+                                <div className="chat-avatar">
+                                  <div className="blank-div"></div>
+                                </div>
+                              ) : (
+                                <div className="chat-avatar">
+                                  {chat?.sender_type === "user" ? (
+                                    <div className="chat-user-img align-self-center me-3">
+                                      <div className="avatar-xs">
+                                        <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                          {props.user?.name?.charAt(0) ?? "A"}{" "}
+                                          {/* User Name Initials */}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ) : chat?.profilePicture === null ? (
+                                    <div className="chat-user-img align-self-center me-3">
+                                      <div className="avatar-xs">
+                                        <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                          {props.user?.name?.charAt(0) ?? "A"}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="chat-user-img align-self-center me-3">
+                                      <div className="avatar-xs">
+                                        <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                          {props.activeConversation?.contact_name?.charAt(
+                                            0
+                                          ) ?? "A"}{" "}
+                                          {/*other user */}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            ) : (
+                              <div className="chat-avatar">
+                                {chat?.sender_type === "user" ? (
+                                  <div className="chat-user-img align-self-center me-3">
+                                    <div className="avatar-xs">
+                                      <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                        {props.user?.name?.charAt(0) ?? "A"}{" "}
+                                        {/* User Name Initials last me*/}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ) : chat?.profilePicture === null ? (
+                                  <div className="chat-user-img align-self-center me-3">
+                                    <div className="avatar-xs">
+                                      <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                        {props.activeConversation?.contact_name?.charAt(
+                                          0
+                                        ) ?? "A"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="chat-user-img align-self-center me-3">
+                                    <div className="avatar-xs">
+                                      <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                        {props.activeConversation?.contact_name?.charAt(
+                                          0
+                                        ) ?? "A"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          }
+
+                          <div
+                            className="user-chat-content"
+                            style={{ position: "relative" }}
+                          >
+                            <div className="ctext-wrap mb-3">
+                              <div className="ctext-wrap-content">
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "8px",
+                                    alignSelf: "flex-start",
+                                    textAlign: "left",
+                                  }}
+                                >
+                                  {/* Görsel varsa üstte */}
+                                  {FileTypeId.Image?.includes(
+                                    chat?.file_type_id
+                                  ) && <RenderImage url={chat?.file_path} />}
+
+                                  {FileTypeId.Document.includes(
+                                    Number(chat?.file_type_id)
+                                  ) &&
+                                    (chat?.file_path?.endsWith("pdf") ? (
+                                      <RenderPDFFirstPage
+                                        url={chat?.file_path}
+                                      />
+                                    ) : (
+                                      <RenderFilePreview
+                                        url={chat?.file_path}
+                                      />
+                                    ))}
+
+                                  {/* Video varsa */}
+                                  {FileTypeId.Video.includes(
+                                    Number(chat?.file_type_id)
+                                  ) && <RenderVideo url={chat?.file_path} />}
+
+                                  {/* Ses varsa */}
+                                  {FileTypeId.Audio?.includes(
+                                    chat?.file_type_id
+                                  ) && <RenderAudio url={chat?.file_path} />}
+
+                                  {/* Text mesaj (https ile başlamıyorsa) */}
+                                  {!chat?.message_content?.startsWith(
+                                    "https"
+                                  ) && <div>{chat.message_content}</div>}
+                                </div>
+
+                                {chat?.isTyping && (
+                                  <p className="mb-0">
+                                    typing
+                                    <span className="animate-typing">
+                                      <span className="dot ms-1"></span>
+                                      <span className="dot ms-1"></span>
+                                      <span className="dot ms-1"></span>
+                                    </span>
+                                  </p>
+                                )}
+                              </div>
+                              {!chat?.isTyping && (
+                                <>
+                                  <br />
+                                  {chat?.sender_type === "user" ? (
+                                    <p
+                                      className="chat-time mb-0"
+                                      style={{ zIndex: 1 }}
+                                    >
+                                      <i className="ri-time-line align-middle"></i>{" "}
+                                      <span className="align-middle">
+                                        {showChatMessageTime(chat?.created_at)}
+
+                                        <MessageStatus status={chat?.status} />
+                                      </span>
+                                    </p>
+                                  ) : (
+                                    <p
+                                      className="chat-time mb-0"
+                                      style={{
+                                        position: "absolute",
+                                        right: "25px",
+                                      }}
+                                    >
+                                      <i className="ri-time-line align-middle"></i>{" "}
+                                      <span className="align-middle">
+                                        {showChatMessageTime(chat?.created_at)}
+                                      </span>
+                                    </p>
+                                  )}
+                                </>
+                              )}
+                              {!chat?.isTyping && (
+                                <UncontrolledDropdown className="align-self-start ms-1">
+                                  <DropdownToggle
+                                    tag="a"
+                                    className="text-muted"
+                                  >
+                                    <i className="ri-more-2-fill"></i>
+                                  </DropdownToggle>
+                                  <DropdownMenu>
+                                    {chat?.file_type_id ? (
+                                      <DropdownItem
+                                        onClick={() =>
+                                          downloadFile(chat?.file_path)
+                                        }
+                                      >
+                                        {t("Download")}
+                                        <i className="ri-file-download-line float-end text-muted"></i>
+                                      </DropdownItem>
+                                    ) : (
+                                      <>
+                                        {chat?.sender_type === "contact" && (
+                                          <DropdownItem
+                                            onClick={() => handleAiClick(chat)}
+                                          >
+                                            <i className="ri-robot-2-line me-2 text-primary"></i>
+                                            Reply with AI
+                                          </DropdownItem>
+                                        )}
+                                      </>
+                                    )}
+                                  </DropdownMenu>
+                                </UncontrolledDropdown>
+                              )}
+                            </div>
+                            {chatMessages[key + 1] ? (
+                              chatMessages[key].sender_type ===
+                              chatMessages[key + 1].sender_type ? null : (
+                                <div className="conversation-name">
+                                  {chat?.sender_type === "user"
+                                    ? props.user?.name
+                                    : chat?.contact_name}
+                                </div>
+                              )
+                            ) : (
                               <div className="conversation-name">
                                 {chat?.sender_type === "user"
                                   ? props.user?.name
                                   : chat?.contact_name}
                               </div>
-                            )
-                          ) : (
-                            <div className="conversation-name">
-                              {chat?.sender_type === "user"
-                                ? props.user?.name
-                                : chat?.contact_name}
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                  )
-                )}
+                      </li>
+                    )
+                  )}
 
-              {/* Chat End Reference */}
-              <li ref={chatEndRef} />
-            </ul>
-          </SimpleBar>
-          <Modal backdrop="static" isOpen={modal} centered toggle={toggle}>
-            <ModalHeader toggle={toggle}>Forward to...</ModalHeader>
-            <ModalBody>
-              <CardBody className="p-2">
-                <SimpleBar style={{ maxHeight: "200px" }}>
-                  <SelectContact handleCheck={() => {}} />
-                </SimpleBar>
-                <ModalFooter className="border-0">
-                  <Button color="primary">Forward</Button>
-                </ModalFooter>
-              </CardBody>
-            </ModalBody>
-          </Modal>
+                {/* Chat End Reference */}
+                <li ref={chatEndRef} />
+              </ul>
+            </SimpleBar>
+            <Modal backdrop="static" isOpen={modal} centered toggle={toggle}>
+              <ModalHeader toggle={toggle}>Forward to...</ModalHeader>
+              <ModalBody>
+                <CardBody className="p-2">
+                  <SimpleBar style={{ maxHeight: "200px" }}>
+                    <SelectContact handleCheck={() => {}} />
+                  </SimpleBar>
+                  <ModalFooter className="border-0">
+                    <Button color="primary">Forward</Button>
+                  </ModalFooter>
+                </CardBody>
+              </ModalBody>
+            </Modal>
 
-          <SendFileModal show={false} />
+            <SendFileModal show={false} />
 
-          <ChatInput onaddMessage={addMessage} />
+            <ChatInput
+              onaddMessage={addMessage}
+              aiResponse={aiResponse}
+              isAiRes={isAiRes}
+              setIsAiRes={setIsAiRes}
+            />
+          </div>
+
+          <UserProfileSidebar
+            activeConversation={props.activeConversation}
+            bitrixData={bitrixData}
+          />
         </div>
-
-        <UserProfileSidebar
-          activeConversation={props.activeConversation}
-          bitrixData={bitrixData}
-        />
-      </div>
+      )}
     </div>
   );
 }
