@@ -52,7 +52,7 @@ function ChatInput(props) {
 
   //function for text input value change
   const onEmojiClick = (event) => {
-    dispatch(setTextMessage(textMessage + event.emoji));
+    setInputValue(inputValue + event.emoji);
   };
 
   //function for file input change
@@ -102,8 +102,8 @@ function ChatInput(props) {
   const handleTemplateSelect = (e, template, activeTab) => {
     e.preventDefault();
     activeTab === "1" && setSelectedTemplate(template);
-    //activeTab === "1" && setShowSendTemplateMessageModal(true);
-    dispatch(setTextMessage(template?.content));
+    activeTab === "1" && setShowSendTemplateMessageModal(true);
+    setInputValue(template?.content);
   };
 
   const getRowCount = (text) => {
@@ -115,6 +115,12 @@ function ChatInput(props) {
     return 1;
   };
 
+  const handleKeyDown = (e) => {
+    if (e?.key === "Enter" && !e?.shiftKey) {
+      e?.preventDefault();
+      e?.target?.form.requestSubmit();
+    }
+  };
   return (
     <div className="chat-input-section ps-3 pe-3 pb-3  ps-lg-4  pe-lg-4  pb-lg-4 border-top mb-0 ">
       <SendTemplateMessageModal
@@ -132,6 +138,7 @@ function ChatInput(props) {
                 type="textarea"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
                 className="form-control form-control-lg bg-light border-light"
                 placeholder="Enter Message..."
                 rows={getRowCount(inputValue)}

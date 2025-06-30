@@ -37,6 +37,8 @@
 }
 
 .user-chat-nav {
+    display: flex;
+    flex-direction: row;
     .nav-btn {
         height: 40px;
         width: 40px;

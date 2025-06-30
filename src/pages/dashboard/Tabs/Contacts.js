@@ -22,12 +22,21 @@ import AddContactModal from "../../../components/AddContactModal";
 import UpdateContactModal from "../../../components/UpdateContactModal";
 import { PERMISSIONS } from "../../../redux/role/constants";
 import PermissionWrapper from "../../../components/PermissionWrapper";
+import BlockListModal from "../../../components/BlockListComponent/BlockListModal";
+import BlockConfirmModal from "../../../components/BlockListComponent/BlockConfirmModal";
+import { toast } from "react-toastify";
 
 const Contacts = (props) => {
   const dispatch = useDispatch();
   const [modal, setModal] = useState(false);
   const [updateModal, setUpdateModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [confirmBlockModal, setConfirmBlockModal] = useState(false);
+  const [contactToBlock, setContactToBlock] = useState(null);
+  const [blockedModal, setBlockedModal] = useState(false);
+  const [blockedContacts, setBlockedContacts] = useState([]);
+  const [loadingBlocked, setLoadingBlocked] = useState(false);
+
   const [selectedContact, setSelectedContact] = useState({
     assigned_user_id: null,
     avatar: null,
@@ -45,6 +54,7 @@ const Contacts = (props) => {
     sex: "",
     surname: "",
     updated_at: null,
+    is_blocked: false,
   });
 
   const toggleModal = () => {
@@ -56,6 +66,17 @@ const Contacts = (props) => {
     dispatch(resetContactWarnings());
     setUpdateModal(!updateModal);
   };
+
+  const toggleConfirmBlockModal = () => {
+    setConfirmBlockModal(!confirmBlockModal);
+  };
+
+  const handleBlockToggleClick = (contact) => {
+    setContactToBlock(contact);
+    toggleConfirmBlockModal();
+  };
+
+  const toggleBlockedModal = () => setBlockedModal(!blockedModal);
 
   const validationSchema = Yup.object({
     name: Yup.string().required(props.t("Name is required")),
@@ -130,11 +151,71 @@ const Contacts = (props) => {
 
   const groupedContacts = groupContactsByInitial(filteredContacts);
 
+const confirmBlockAction = async (contact) => {
+  if (!contact) return { success: false };
+
+  try {
+    const url = contact.is_blocked
+      ? `${process.env.REACT_APP_API_URL}/api/contacts/unblock/${contact.id}`
+      : `${process.env.REACT_APP_API_URL}/api/contacts/block/${contact.id}`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) throw new Error("Failed to update block status");
+
+    toast.success(
+      contact.is_blocked
+        ? "Contact unblocked successfully."
+        : "Contact blocked successfully."
+    );
+
+    await dispatch(fetchContacts());
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating block status:", error);
+    toast.error("Failed to update block status.");
+    return { success: false };
+  } finally {
+    setConfirmBlockModal(false);
+    setContactToBlock(null);
+  }
+};
+
+  const handleBlockedButtonClick = () => {
+    toggleBlockedModal();
+    fetchBlockedContacts();
+  };
+
+  const fetchBlockedContacts = async () => {
+    setLoadingBlocked(true);
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/contacts/blocklist`,
+        {
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": 69420,
+          },
+        }
+      );
+      if (!response.ok) throw new Error("Failed to fetch blocked contacts");
+      const data = await response.json();
+      setBlockedContacts(data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load blocked contacts");
+    } finally {
+      setLoadingBlocked(false);
+    }
+  };
   return (
     <React.Fragment>
       <div>
         <div className="p-4">
-          <div className="user-chat-nav float-end">
+          <div className="user-chat-nav float-end ">
             <div id="add-contact">
               <Button
                 type="button"
@@ -148,7 +229,21 @@ const Contacts = (props) => {
             <UncontrolledTooltip target="add-contact" placement="bottom">
               {props.t("Add Contact")}
             </UncontrolledTooltip>
+            <div id="blocked-contacts" className="ms-2">
+              <Button
+                type="button"
+                color="link"
+                onClick={handleBlockedButtonClick}
+                className="text-decoration-none text-muted font-size-18 py-0"
+              >
+                <i className="ri-forbid-line"></i>
+              </Button>
+            </div>
+            <UncontrolledTooltip target="blocked-contacts" placement="bottom">
+              {props.t("Blocked Contacts")}
+            </UncontrolledTooltip>
           </div>
+
           <h4 className="mb-4">{props.t("Contacts")}</h4>
 
           {/* Add Contact Modal */}
@@ -219,18 +314,30 @@ const Contacts = (props) => {
                             <i className="ri-more-2-fill"></i>
                           </DropdownToggle>
                           <DropdownMenu className="dropdown-menu-end">
-                            <DropdownItem>
+                            <DropdownItem
+                              onClick={() => handleBlockToggleClick(contact)}
+                            >
+                              {contact.is_blocked
+                                ? props.t("Unblock")
+                                : props.t("Block")}{" "}
+                              <i
+                                className={
+                                  contact.is_blocked
+                                    ? "ri-check-line float-end text-muted"
+                                    : "ri-forbid-line float-end text-muted"
+                                }
+                              ></i>
+                            </DropdownItem>
+
+                            {/* <DropdownItem>
                               {props.t("Share")}{" "}
                               <i className="ri-share-line float-end text-muted"></i>
                             </DropdownItem>
-                            <DropdownItem>
-                              {props.t("Block")}{" "}
-                              <i className="ri-forbid-line float-end text-muted"></i>
-                            </DropdownItem>
+
                             <DropdownItem>
                               {props.t("Remove")}{" "}
                               <i className="ri-delete-bin-line float-end text-muted"></i>
-                            </DropdownItem>
+                            </DropdownItem> */}
                           </DropdownMenu>
                         </UncontrolledDropdown>
                       </div>
@@ -241,6 +348,23 @@ const Contacts = (props) => {
             ))}
         </SimpleBar>
       </div>
+      {/* Confirm Block Modal */}
+      <BlockConfirmModal
+        confirmBlockModal={confirmBlockModal}
+        toggleConfirmBlockModal={toggleConfirmBlockModal}
+        contactToBlock={contactToBlock}
+        confirmBlockAction={confirmBlockAction}
+        t={props.t}
+      />
+
+      <BlockListModal
+        blockedModal={blockedModal}
+        toggleBlockedModal={toggleBlockedModal}
+        blockedContacts={blockedContacts}
+        confirmBlockAction={confirmBlockAction}
+        setBlockedContacts={setBlockedContacts}
+        t={props.t}
+      />
     </React.Fragment>
   );
 };

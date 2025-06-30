@@ -17,10 +17,6 @@ import UpdateCannedResponseModal from "./UpdateCannedResponseModal";
 
 const columns = [
   {
-    Header: "ID",
-    accessor: "id", // accessor is the "key" in the data
-  },
-  {
     Header: "Canned Response",
     accessor: "name",
     Cell: ({ value }) => {

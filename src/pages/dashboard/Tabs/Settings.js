@@ -91,10 +91,7 @@ function Settings(props) {
                 </NavItem>
               )}
 
-              {hasPermission(
-                userPermissions,
-                PERMISSIONS.VIEW_DEPARTMENTS
-              ) && (
+              {hasPermission(userPermissions, PERMISSIONS.VIEW_DEPARTMENTS) && (
                 <NavItem>
                   <NavLink
                     className={

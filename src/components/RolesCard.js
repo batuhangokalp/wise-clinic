@@ -17,7 +17,6 @@ import Swal from "sweetalert2";
 
 // Table column definitions
 const columns = [
-  { Header: "ID", accessor: "id" },
   { Header: "Role", accessor: "role_name" },
   { Header: "Description", accessor: "role_description" },
 ];

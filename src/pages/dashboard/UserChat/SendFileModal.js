@@ -1,4 +1,4 @@
-import React, { act, useEffect } from "react";
+import React, { act, useEffect, useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import PropTypes from "prop-types";
@@ -20,10 +20,11 @@ import RenderImage from "./RenderImage";
 import RenderAudio from "./RenderAudio";
 import { convertFileToBinary } from "../../../helpers/fileUtils";
 import RenderFilePreview from "./RenderFilePreview";
+import { Input } from "reactstrap";
 
 export default function SendFileModal() {
-  const [show, setShow] = React.useState(false);
-
+  const [show, setShow] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   /* intilize t variable for multi language implementation */
   const { t } = useTranslation();
   const textMessage = useSelector((state) => state.Chat.textMessage);
@@ -37,45 +38,49 @@ export default function SendFileModal() {
   const user = useSelector((state) => state.User.user);
 
   const handleSend = async () => {
-    const formData = new FormData();
-    formData.append("file", chatFile);
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", chatFile);
 
-    const uploadResponse = await dispatch(uploadFile(formData));
+      const uploadResponse = await dispatch(uploadFile(formData));
+      const url = uploadResponse?.url || chatFile?.url;
 
-    let url = uploadResponse?.url || chatFile?.url;
+      const request = {
+        phone_number: activeConversation?.phone_number,
+        message_type_name: null,
+        message_category: "session",
+        sender_source: "908503770269",
+        receiver_destination: activeConversation?.phone_number,
+        assigned_user_id: user?.id,
+        url: url,
+        caption: textMessage || "",
+        message_content: textMessage || "",
+        filename: chatFile?.name,
+      };
 
-    let request = {
-      phone_number: activeConversation?.phone_number,
-      message_type_name: null,
-      message_category: "session",
-      sender_source: "908503770269",
-      receiver_destination: activeConversation?.phone_number,
-      assigned_user_id: user?.id,
-      url: url,
-      caption: textMessage ? textMessage : "",
-      message_content: "",
-      filename: chatFile?.name,
-    };
+      const fileType = findFileType(chatFile?.type);
 
-    let fileType = findFileType(chatFile?.type);
+      if (FileTypeId.Image?.includes(fileType))
+        request["message_type_name"] = "image";
+      else if (fileType === FileTypeId.Document)
+        request["message_type_name"] = "file";
+      else if (FileTypeId.Audio?.includes(fileType))
+        request["message_type_name"] = "audio";
+      else if (fileType === FileTypeId.Video)
+        request["message_type_name"] = "video";
+      else if (fileType === FileTypeId.Text)
+        request["message_type_name"] = "text";
 
-    if (FileTypeId.Image?.includes(fileType)) {
-      request["message_type_name"] = "image";
-    } else if (fileType === FileTypeId.Document) {
-      request["message_type_name"] = "file";
-    } else if (FileTypeId.Audio?.includes(fileType)) {
-      request["message_type_name"] = "audio";
-    } else if (fileType === FileTypeId.Video) {
-      request["message_type_name"] = "video";
-    } else if (fileType === FileTypeId.Text) {
-      request["message_type_name"] = "text";
+      await dispatch(sendMessage(request));
+      await dispatch(fetchConversationById(activeConversation?.id));
+      await dispatch(fetchMessagesByConversationId(activeConversation));
+      handleClose();
+    } catch (err) {
+      console.error("Gönderme hatası:", err);
+    } finally {
+      setIsLoading(false);
     }
-
-    await dispatch(sendMessage(request));
-    await dispatch(fetchConversationById(activeConversation?.id));
-    await dispatch(fetchMessagesByConversationId(activeConversation));
-
-    handleClose();
   };
 
   const handleClose = () => {
@@ -114,22 +119,41 @@ export default function SendFileModal() {
         <RenderImage chatFile={chatFile} />
         <RenderPDFFirstPage chatFile={chatFile} />
         <RenderFilePreview chatFile={chatFile} />
-
         <RenderAudio chatFile={chatFile} />
         <RenderVideo chatFile={chatFile} />
 
-        {/* {chatFile && findFileType(chatFile?.type) === FileTypeId.Text && (
-          <div className="text-center">
-            <i className="ri-file-text-fill" style={{ fontSize: "100px" }}></i>
-          </div>
-        )} */}
+        {/* Yazı alanı (dosya açıklaması / caption) */}
+        <div className="mt-4" style={{ width: "100%" }}>
+          <Input
+            type="text"
+            value={textMessage}
+            onChange={(e) => dispatch(setTextMessage(e.target.value))}
+            className="form-control form-control-lg bg-light border-light"
+            placeholder="Enter Message..."
+          />
+        </div>
       </Modal.Body>
+
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Cancel
+        <Button variant="secondary" onClick={handleClose} disabled={isLoading}>
+          {t("Cancel")}
         </Button>
-        <Button variant="primary" onClick={handleSend}>
-          Send
+
+        <Button variant="primary" onClick={handleSend} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <span className="me-2">
+                <span
+                  className="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+              </span>
+              {t("Sending...")}
+            </>
+          ) : (
+            t("Send")
+          )}
         </Button>
       </Modal.Footer>
     </Modal>

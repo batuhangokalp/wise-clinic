@@ -23,14 +23,19 @@ const VariableInputModal = ({
     <Modal isOpen={open} toggle={toggle}>
       <ModalHeader toggle={toggle}>Add Content Variable</ModalHeader>
       <ModalBody>
+        <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "1rem" }}>
+          You can enter a number (e.g., 1, 2, 3) for the variable inside the
+          curly braces in the content field, and assign a corresponding value
+          below.
+        </p>
         <FormGroup>
-          <Label for="keyInput">Key (ex: 2)</Label>
+          <Label for="keyInput">Variable</Label>
           <Input
             id="keyInput"
             type="number"
             value={tempContentKey}
             onChange={(e) => setTempContentKey(e.target.value)}
-            placeholder="Enter Key"
+            placeholder="Enter Variable Number (e.g., 1, 2, 3)"
           />
         </FormGroup>
         <FormGroup>
@@ -43,6 +48,7 @@ const VariableInputModal = ({
           />
         </FormGroup>
       </ModalBody>
+
       <ModalFooter>
         <Button color="secondary" onClick={toggle}>
           Cancel

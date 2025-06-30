@@ -10,7 +10,6 @@ import * as Yup from "yup";
 import Swal from "sweetalert2";
 
 const columns = [
-  { Header: "ID", accessor: "id" },
   { Header: "Name", accessor: "name" },
   { Header: "Surname", accessor: "surname" },
   { Header: "Position", accessor: "position_name" },

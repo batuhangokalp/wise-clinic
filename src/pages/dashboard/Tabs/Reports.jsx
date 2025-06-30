@@ -1,13 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReportFilters from "../../../components/ReportsComponent/ReportFilters";
 import StatCard from "../../../components/ReportsComponent/StatCard";
 import MessagesChart from "../../../components/ReportsComponent/MessagesChart";
 import EmployeeTable from "../../../components/ReportsComponent/EmployeeTable";
 
 import "../../../assets/scss/reports/reports.scss";
-import {  PERMISSIONS } from "../../../redux/role/constants";
+import { PERMISSIONS } from "../../../redux/role/constants";
 import PermissionWrapper from "../../../components/PermissionWrapper";
-
 
 const Reports = () => {
   const [startDate, setStartDate] = useState("");
@@ -73,28 +72,51 @@ const Reports = () => {
     },
   ];
 
+  const getDefaultStartDate = () => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1)
+      .toISOString()
+      .split("T")[0]; // yyyy-mm-dd
+  };
+
+  const getDefaultEndDate = () => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      .toISOString()
+      .split("T")[0];
+  };
+
+  useEffect(() => {
+    const defaultStart = getDefaultStartDate();
+    const defaultEnd = getDefaultEndDate();
+
+    setStartDate(defaultStart);
+    setEndDate(defaultEnd);
+
+    // default verilerle fetch et
+    handleApply(defaultStart, defaultEnd, channel);
+  }, []);
+
   const handleFilterChange = (field, value) => {
     if (field === "startDate") setStartDate(value);
     if (field === "endDate") setEndDate(value);
     if (field === "channel") setChannel(value);
   };
-
-  const handleApply = async () => {
-    if (!startDate || !endDate) {
-      alert("You must select the date range.");
-      return;
-    }
-
+  const handleApply = async (
+    forcedStartDate = startDate,
+    forcedEndDate = endDate,
+    forcedChannel = channel
+  ) => {
     setLoading(true);
 
     try {
-      const params = {
-        start_date: startDate,
-        end_date: endDate,
-      };
+      const params = {};
 
-      if (channel !== "all") {
-        params.channel_id = parseInt(channel);
+      if (forcedStartDate) params.start_date = forcedStartDate;
+      if (forcedEndDate) params.end_date = forcedEndDate;
+
+      if (forcedChannel && forcedChannel !== "all") {
+        params.channel_id = parseInt(forcedChannel);
       }
 
       const queryString = new URLSearchParams(params).toString();
@@ -123,7 +145,6 @@ const Reports = () => {
     setLoading(false);
   };
 
-
   return (
     <div className="reports-page">
       <div className="filters-section">
@@ -133,7 +154,7 @@ const Reports = () => {
           endDate={endDate}
           channel={channel}
           onChange={handleFilterChange}
-          onApply={handleApply}
+          onApply={() => handleApply()}
         />
       </div>
 

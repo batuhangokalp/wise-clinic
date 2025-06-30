@@ -17,10 +17,6 @@ import UpdateDepartmentModal from "./UpdateDepartmentModal";
 
 const columns = [
   {
-    Header: "ID",
-    accessor: "id", // accessor is the "key" in the data
-  },
-  {
     Header: "Department",
     accessor: "name",
   },

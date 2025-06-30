@@ -38,7 +38,7 @@ function Profile() {
   const userInfo = useMemo(() => {
     const stored = localStorage.getItem("authUser");
     return stored ? JSON.parse(stored) : null;
-  }, []); 
+  }, []);
 
   const currentUser = user?.user;
 
@@ -62,7 +62,7 @@ function Profile() {
 
   useEffect(() => {
     if (!userInfo?.id) return;
-  
+
     const fetchUser = async () => {
       try {
         const res = await fetch(
@@ -74,12 +74,12 @@ function Profile() {
             },
           }
         );
-  
+
         if (!res.ok) {
           const errText = await res.text();
           throw new Error(`Kullanıcı alınamadı: ${res.status} - ${errText}`);
         }
-  
+
         const data = await res.json();
         setUser(data);
       } catch (err) {
@@ -88,7 +88,7 @@ function Profile() {
         setLoading(false);
       }
     };
-  
+
     fetchUser();
   }, [userInfo?.id]);
 
@@ -144,9 +144,9 @@ function Profile() {
                   }}
                   handleSubmit={handleUpdateSubmit}
                 />
-                <DropdownItem>{t("Action")}</DropdownItem>
+                {/* <DropdownItem>{t("Action")}</DropdownItem>
                 <DropdownItem divider />
-                <DropdownItem>{t("Another action")}</DropdownItem>
+                <DropdownItem>{t("Another action")}</DropdownItem> */}
               </DropdownMenu>
             </Dropdown>
           </div>
@@ -155,11 +155,25 @@ function Profile() {
 
         <div className="text-center p-4 border-bottom">
           <div className="mb-4">
-            <img
-              src={currentUser.avatar ?? avatar1}
-              className="rounded-circle avatar-lg img-thumbnail"
-              alt="profile"
-            />
+            {currentUser?.avatar ? (
+              <img
+                src={currentUser.avatar}
+                className="rounded-circle avatar-lg img-thumbnail"
+                alt="avatar"
+              />
+            ) : (
+              <div
+                className="rounded-circle avatar-lg img-thumbnail d-flex align-items-center justify-content-center bg-primary text-white fw-bold"
+                style={{
+                  fontSize: "24px",
+                  width: "60px",
+                  height: "60px",
+                  margin: "0 auto",
+                }}
+              >
+                {currentUser?.name?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
           </div>
 
           <h5 className="font-size-16 mb-1 text-truncate">

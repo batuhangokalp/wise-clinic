@@ -7,19 +7,13 @@ import {
   createTemplate,
   apiTemplateError,
   apiTemplateSuccess,
-  updateTemplate,
   deleteTemplate,
 } from "../redux/actions";
 import * as Yup from "yup";
 import Swal from "sweetalert2";
-import UpdateTemplateModal from "./UpdateTemplateModal";
 import CreateTemplateModal from "./CreateTemplateModal";
 
 const columns = [
-  {
-    Header: "ID",
-    accessor: "id", // accessor is the "key" in the data
-  },
   {
     Header: "Template",
     accessor: "element_name",
@@ -35,7 +29,7 @@ const columns = [
       );
     },
   },
-    {
+  {
     Header: "Status",
     accessor: "status",
   },
@@ -48,8 +42,6 @@ export default function TemplatesCard(props) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredTemplates, setFilteredTemplates] = useState(templates);
   const [createTemplateModal, setCreateTemplateModal] = useState(false);
-  const [updateTemplateModal, setUpdateTemplateModal] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [variableContent, setVariableContent] = useState([]);
   const [variableHeader, setVariableHeader] = useState([]);
 
@@ -68,11 +60,6 @@ export default function TemplatesCard(props) {
   const success = useSelector((state) => state.Templates.success);
 
   const createValidationSchema = Yup.object().shape({
-    element_name: Yup.string().required(props.t("Template name is required")),
-    content: Yup.string().required(props.t("Content is required")),
-  });
-
-  const updateValidationSchema = Yup.object().shape({
     element_name: Yup.string().required(props.t("Template name is required")),
     content: Yup.string().required(props.t("Content is required")),
   });
@@ -193,19 +180,6 @@ export default function TemplatesCard(props) {
     });
   };
 
-  const handleUpdateSubmit = async (values) => {
-    await dispatch(updateTemplate(values)).then((response) => {
-      if (response) {
-        setTimeout(async () => {
-          setUpdateTemplateModal(false);
-          dispatch(fetchTemplates());
-          dispatch(apiTemplateError(null));
-          dispatch(apiTemplateSuccess(null));
-        }, 3000);
-      }
-    });
-  };
-
   const handleDelete = async (e, id) => {
     e.preventDefault();
 
@@ -256,7 +230,6 @@ export default function TemplatesCard(props) {
                   dispatch(apiTemplateError(null));
                   dispatch(apiTemplateSuccess(null));
                   setCreateTemplateModal(true);
-                  setSelectedTemplate(null);
                 }}
               >
                 {props.t("Create Template")}
@@ -311,17 +284,6 @@ export default function TemplatesCard(props) {
                         })}
                         <td>
                           <div className="btn-group">
-                            <button
-                              className="btn btn-primary"
-                              onClick={() => {
-                                setSelectedTemplate(row.original);
-                                dispatch(apiTemplateError(null));
-                                dispatch(apiTemplateSuccess(null));
-                                setUpdateTemplateModal(true);
-                              }}
-                            >
-                              {props.t("Edit")}
-                            </button>
                             <button
                               className="btn btn-secondary"
                               onClick={(e) => {
@@ -397,22 +359,6 @@ export default function TemplatesCard(props) {
         setTempContentKey={setTempContentKey}
         tempContentValue={tempContentValue}
         setTempContentValue={setTempContentValue}
-      />
-      <UpdateTemplateModal
-        modal={updateTemplateModal}
-        toggleModal={() => {
-          setUpdateTemplateModal(!updateTemplateModal);
-          dispatch(apiTemplateError(null));
-          dispatch(apiTemplateSuccess(null));
-        }}
-        parentProps={{
-          t: props.t,
-          error: error,
-          success: success,
-        }}
-        validationSchema={updateValidationSchema}
-        handleSubmit={handleUpdateSubmit}
-        selectedItem={selectedTemplate}
       />
     </div>
   );

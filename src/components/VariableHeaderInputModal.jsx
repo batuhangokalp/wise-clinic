@@ -28,16 +28,21 @@ const VariableHeaderInputModal = ({
       toggle={() => setOpenHeaderModal(!openHeaderModal)}
     >
       <ModalHeader toggle={() => setOpenHeaderModal(!openHeaderModal)}>
-        Variable Ekle
+        Add Header Variable
       </ModalHeader>
       <ModalBody>
+        <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "1rem" }}>
+          You can enter a number (e.g., 1, 2, 3) for the variable inside the
+          curly braces in the header field, and assign a corresponding value
+          below.
+        </p>
         <div className="mb-3">
-          <label>Variable Key (ex: 1)</label>
+          <label>Variable</label>
           <input
             className="form-control"
             value={tempKey}
             onChange={(e) => setTempKey(e.target.value)}
-            placeholder="1"
+            placeholder="Enter Variable Number (e.g., 1, 2, 3)"
           />
         </div>
         <div className="mb-3">

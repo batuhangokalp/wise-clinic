@@ -8,8 +8,7 @@ import "./assets/scss/themes.scss";
 import fakeBackend from "./helpers/fake-backend";
 import { useSelector } from "react-redux";
 import { createSelector } from "reselect";
-
-
+import { ToastContainer } from "react-toastify";
 
 // //Firebase helper
 // import { initFirebaseBackend } from "./helpers/firebase";
@@ -45,7 +44,24 @@ function App() {
     layoutMode && localStorage.setItem("layoutMode", layoutMode);
   }, [layoutMode]);
 
-  return <Routes />;
+  return (
+    <>
+      <Routes />
+      {/* Toast bildirimleri için container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
+    </>
+  );
 }
 
 export default App;
