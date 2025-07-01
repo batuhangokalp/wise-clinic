@@ -96,12 +96,15 @@ export default function RenderPDFFirstPage({ chatFile, url }) {
   // Dosya tipi PDF değilse hiçbir şey gösterme
   const isPdf =
     (chatFile &&
-      findFileType(chatFile?.type) === FileTypeId.Document &&
+      FileTypeId.Document.includes(findFileType(chatFile?.type)) &&
       chatFile?.type?.includes("pdf")) ||
     fileExtension === "pdf";
 
   useEffect(() => {
-    if (chatFile && findFileType(chatFile?.type) === FileTypeId.Document) {
+    if (
+      chatFile &&
+      FileTypeId.Document.includes(findFileType(chatFile?.type))
+    ) {
       const blobUrl = URL.createObjectURL(chatFile);
       setPdfUrl(blobUrl);
     } else if (url) {

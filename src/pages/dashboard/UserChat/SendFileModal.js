@@ -21,6 +21,7 @@ import RenderAudio from "./RenderAudio";
 import { convertFileToBinary } from "../../../helpers/fileUtils";
 import RenderFilePreview from "./RenderFilePreview";
 import { Input } from "reactstrap";
+import RenderDocPreview from "./RenderDoc";
 
 export default function SendFileModal() {
   const [show, setShow] = useState(false);
@@ -61,17 +62,23 @@ export default function SendFileModal() {
 
       const fileType = findFileType(chatFile?.type);
 
-      if (FileTypeId.Image?.includes(fileType))
+      if (FileTypeId.Image.includes(fileType)) {
         request["message_type_name"] = "image";
-      else if (fileType === FileTypeId.Document)
+      } else if (
+        FileTypeId.Document.includes(fileType) ||
+        fileType === FileTypeId.TextFile // txt, doc, pdf gibi dosyalar file olarak geçsin
+      ) {
         request["message_type_name"] = "file";
-      else if (FileTypeId.Audio?.includes(fileType))
+      } else if (FileTypeId.Audio.includes(fileType)) {
         request["message_type_name"] = "audio";
-      else if (fileType === FileTypeId.Video)
+      } else if (FileTypeId.Video.includes(fileType)) {
         request["message_type_name"] = "video";
-      else if (fileType === FileTypeId.Text)
-        request["message_type_name"] = "text";
-
+      } else if (fileType === FileTypeId.Text) {
+        request["message_type_name"] = "text"; // sade metin mesaj
+      } else {
+        request["message_type_name"] = "text"; // fallback
+      }
+console.log("request: ", request);
       await dispatch(sendMessage(request));
       await dispatch(fetchConversationById(activeConversation?.id));
       await dispatch(fetchMessagesByConversationId(activeConversation));
@@ -99,6 +106,7 @@ export default function SendFileModal() {
     }
   }, [chatFile]);
 
+
   return (
     <Modal
       show={show}
@@ -114,14 +122,14 @@ export default function SendFileModal() {
           <p>{chatFile?.name}</p>
         </div>
       </Modal.Header>
-
+      
       <Modal.Body style={{ alignSelf: "center" }}>
         <RenderImage chatFile={chatFile} />
         <RenderPDFFirstPage chatFile={chatFile} />
         <RenderFilePreview chatFile={chatFile} />
+        <RenderDocPreview chatFile={chatFile} /> {/* Buraya ekledik */}
         <RenderAudio chatFile={chatFile} />
         <RenderVideo chatFile={chatFile} />
-
         {/* Yazı alanı (dosya açıklaması / caption) */}
         <div className="mt-4" style={{ width: "100%" }}>
           <Input

@@ -49,7 +49,6 @@ function UserHead(props) {
     copyallUsers[0].messages = [];
   }
 
-
   return (
     <React.Fragment>
       <div className="p-3 p-lg-4 border-bottom user-chat-topbar">
@@ -124,7 +123,7 @@ function UserHead(props) {
             </div>
           </Col>
           <Col sm={8} xs={4}>
-            <ul className="list-inline user-chat-nav text-end mb-0">
+            <ul className="list-inline user-chat-nav text-end mb-0 float-end">
               <li className="list-inline-item">
                 <Dropdown isOpen={dropdownOpen} toggle={toggle}>
                   <DropdownToggle

@@ -55,6 +55,7 @@ import PermissionWrapper from "../../../components/PermissionWrapper";
 import axios from "axios";
 import AiSuggestionModal from "./AiSuggestionModal";
 import AIPromptInputModal from "./AIPromptInputModal";
+import RenderDocPreview from "./RenderDoc";
 
 function UserChat(props) {
   const dispatch = useDispatch();
@@ -709,6 +710,15 @@ function UserChat(props) {
                                   //file input component
                                   <RenderAudio url={chat?.file_path} />
                                 )}
+                                {(FileTypeId.TextFile ===
+                                  Number(chat?.file_type_id) ||
+                                  (Number(chat?.file_type_id) ===
+                                    FileTypeId.Document[0] &&
+                                    (chat?.file_path?.endsWith(".txt") ||
+                                      chat?.file_path?.endsWith(".doc") ||
+                                      chat?.file_path?.endsWith(".docx")))) && (
+                                  <RenderDocPreview url={chat?.file_path} />
+                                )}
 
                                 {chat?.isTyping && (
                                   <p className="mb-0">
@@ -885,7 +895,6 @@ function UserChat(props) {
                                         url={chat?.file_path}
                                       />
                                     ))}
-
                                   {/* Video varsa */}
                                   {FileTypeId.Video.includes(
                                     Number(chat?.file_type_id)
@@ -895,6 +904,27 @@ function UserChat(props) {
                                   {FileTypeId.Audio?.includes(
                                     chat?.file_type_id
                                   ) && <RenderAudio url={chat?.file_path} />}
+
+                                  {/* Dosya varsa */}
+                                  {(FileTypeId.TextFile ===
+                                    Number(chat?.file_type_id) ||
+                                    (Number(chat?.file_type_id) ===
+                                      FileTypeId.Document[0] &&
+                                      chat?.file_path?.endsWith(".txt"))) && (
+                                    <RenderFilePreview url={chat?.file_path} />
+                                  )}
+                                  {/* Text dosyası, Word dosyası veya txt dosyası */}
+                                  {(FileTypeId.TextFile ===
+                                    Number(chat?.file_type_id) ||
+                                    (Number(chat?.file_type_id) ===
+                                      FileTypeId.Document[0] &&
+                                      (chat?.file_path?.endsWith(".txt") ||
+                                        chat?.file_path?.endsWith(".doc") ||
+                                        chat?.file_path?.endsWith(
+                                          ".docx"
+                                        )))) && (
+                                    <RenderDocPreview url={chat?.file_path} />
+                                  )}
 
                                   {/* Text mesaj (https ile başlamıyorsa) */}
                                   {!chat?.message_content?.startsWith(
