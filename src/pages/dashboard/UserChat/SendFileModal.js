@@ -78,7 +78,6 @@ export default function SendFileModal() {
       } else {
         request["message_type_name"] = "text"; // fallback
       }
-console.log("request: ", request);
       await dispatch(sendMessage(request));
       await dispatch(fetchConversationById(activeConversation?.id));
       await dispatch(fetchMessagesByConversationId(activeConversation));
@@ -101,8 +100,7 @@ console.log("request: ", request);
       setShow(true);
       //console.log(chatFile)
       //console.log("url: ", URL.createObjectURL(chatFile))
-      FileTypeId.Image?.includes(findFileType(chatFile?.type)) &&
-        console.log(URL.createObjectURL(chatFile));
+      FileTypeId.Image?.includes(findFileType(chatFile?.type)) 
     }
   }, [chatFile]);
 
@@ -127,7 +125,7 @@ console.log("request: ", request);
         <RenderImage chatFile={chatFile} />
         <RenderPDFFirstPage chatFile={chatFile} />
         <RenderFilePreview chatFile={chatFile} />
-        <RenderDocPreview chatFile={chatFile} /> {/* Buraya ekledik */}
+        <RenderDocPreview chatFile={chatFile} /> 
         <RenderAudio chatFile={chatFile} />
         <RenderVideo chatFile={chatFile} />
         {/* Yazı alanı (dosya açıklaması / caption) */}

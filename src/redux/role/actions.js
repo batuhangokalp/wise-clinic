@@ -275,15 +275,6 @@ export const fetchPermissionList = () => {
   };
 };
 
-// export const hasPermission = (roleId, permission) => {
-//   console.log("lkdjskfdskfds", roleId, permission);
-//   const role = ROLES[roleId]; // Map roleId to role name
-//   return (
-//     ROLE_PERMISSIONS[role]?.includes(permission) ||
-//     ROLE_PERMISSIONS[role]?.includes(PERMISSIONS.VIEW_ALL_COMPONENTS)
-//   );
-// };
-
 export const hasPermission = (permissions, permissionToCheck) => {
   if (!Array.isArray(permissions)) {
     console.warn("Permissions is not an array:", permissions);

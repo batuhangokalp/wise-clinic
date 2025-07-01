@@ -103,7 +103,7 @@ function ChatInput(props) {
     e.preventDefault();
     activeTab === "1" && setSelectedTemplate(template);
     activeTab === "1" && setShowSendTemplateMessageModal(true);
-    setInputValue(template?.content);
+    activeTab === "2" && setInputValue(template?.content);
   };
 
   const getRowCount = (text) => {

@@ -66,7 +66,6 @@ export default function TemplatesCard(props) {
 
   const toggle = () => setOpen(!open);
   const toggleHeaderModal = () => setOpenHeaderModal(!openHeaderModal);
-
   const handleAddVariableContent = () => {
     if (!tempContentKey || !tempContentValue) return;
 
