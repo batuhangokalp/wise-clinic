@@ -7,7 +7,6 @@ const MessageStatus = ({ status }) => {
     verticalAlign: "middle"
   };
 
-  // Tek Tik (Gönderildi) - Yumuşak kavis, minimal
   const singleTick = (
     <svg
       style={iconStyle}
@@ -23,7 +22,6 @@ const MessageStatus = ({ status }) => {
     </svg>
   );
 
-  // Çift Tik (İletildi) - Sol yukarı, sağ aşağı, organik kavis
   const doubleTickGray = (
     <svg
       style={iconStyle}
@@ -35,12 +33,11 @@ const MessageStatus = ({ status }) => {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M3 16l3.5 3L12 9" />  {/* Sol tik (yukarıda) */}
-      <path d="M11 16l3.5 3L21 7" />  {/* Sağ tik (aşağıda) */}
+      <path d="M3 16l3.5 3L12 9" />
+      <path d="M11 16l3.5 3L21 7" />
     </svg>
   );
 
-  // Çift Tik (Okundu) - Mavi gradient efekti için iki ton
   const doubleTickBlue = (
     <svg
       style={iconStyle}
@@ -71,6 +68,23 @@ const MessageStatus = ({ status }) => {
     </svg>
   );
 
+  const failedIcon = (
+    <svg
+      style={iconStyle}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#D32F2F"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12" y2="16" />
+    </svg>
+  );
+
   switch (status) {
     case "sent":
       return singleTick;
@@ -78,6 +92,8 @@ const MessageStatus = ({ status }) => {
       return doubleTickGray;
     case "read":
       return doubleTickBlue;
+    case "failed":
+      return failedIcon;
     default:
       return null;
   }

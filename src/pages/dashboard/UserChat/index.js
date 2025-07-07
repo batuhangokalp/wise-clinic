@@ -34,6 +34,7 @@ import { throttle } from "lodash";
 
 //actions
 import {
+  fetchContactById,
   hasPermission,
   openUserSidebar,
   setChatMessages,
@@ -56,6 +57,7 @@ import axios from "axios";
 import AiSuggestionModal from "./AiSuggestionModal";
 import AIPromptInputModal from "./AIPromptInputModal";
 import RenderDocPreview from "./RenderDoc";
+import { toast } from "react-toastify";
 
 function UserChat(props) {
   const dispatch = useDispatch();
@@ -133,11 +135,42 @@ function UserChat(props) {
     };
   }, [SOCKET_SERVER_URL]);
 
+  const playNotificationSound = () => {
+    const audio = new Audio("/notifications.wav");
+    audio.play().catch((err) => {
+      console.warn("Ses çalınamadı:", err);
+    });
+  };
+
+  const showDesktopNotification = (title, message) => {
+    if (Notification.permission === "granted") {
+      try {
+        new Notification(title, {
+          body: message,
+          icon: "/upsense-logo.png",
+        });
+      } catch (error) {
+        //console.error("Bildirim gönderilemedi:", error);
+      }
+    } else {
+      //console.log("Bildirim izni yok.");
+    }
+  };
+  const contacts = useSelector((state) => state.Contact.contacts);
+
   useEffect(() => {
     if (socket) {
       const handleConnect = () => console.log("Connected to server");
 
       const handleMessage = (message) => {
+        const contact = contacts.find((c) => c.id === message.senderId);
+        const senderName = contact?.name || "";
+        const senderSurname = contact?.surname || "";
+        playNotificationSound();
+        showDesktopNotification(
+          `${senderName} ${senderSurname} sent message!`,
+          message.message
+        );
         if (chatMessages?.length > 0) {
           let data = {
             id: chatMessages[chatMessages.length - 1]?.id + 1,
@@ -209,22 +242,23 @@ function UserChat(props) {
     if (!socket) return;
 
     const handleMessageStatus = (data) => {
-      //console.log("✅ Socket event: message-status", data);
-
       if (data.eventType === "message-status") {
-        const { messageId, status } = data;
-        //console.log("Gupshup ID:", messageId, "Status:", status);
+        const { messageId, status, error } = data;
+        // console.log("Gupshup ID:", messageId, "Status:", status);
 
-        if (!Array.isArray(chatMessages)) {
-          //console.warn("chatMessages bir dizi değil:", chatMessages);
-          return;
-        }
+        if (!Array.isArray(chatMessages)) return;
 
         const updatedMessages = chatMessages.map((msg) =>
           msg.gupshup_message_id === messageId ? { ...msg, status } : msg
         );
 
         dispatch(setChatMessages(updatedMessages));
+
+        if (status === "failed") {
+          toast.error(error, {
+            position: "bottom-right",
+          });
+        }
       }
     };
 
@@ -500,17 +534,25 @@ function UserChat(props) {
     );
   }
 
-  const handleAiClick = async (chat) => {
-    setCurrentChat(chat);
+  const handleAiClick = async (messages) => {
+    console.log("messages:", messages);
+    setCurrentChat(messages); // İstersen sadece son mesajı da set edebilirsin
     setAiModalOpen(true);
     setAiLoading(true);
+
     try {
+      // Mesaj içeriklerini birleştir
+      const combinedMessage = messages
+        .map((msg) => msg.message_content)
+        .join("\n");
+
+      console.log("objects:", combinedMessage);
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/api/ai/suggestions`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: chat.message_content }),
+          body: JSON.stringify({ message: combinedMessage }),
         }
       );
 
@@ -593,18 +635,20 @@ function UserChat(props) {
               padding: "40px 0",
             }}
           >
-            <i
-              className="ri-robot-2-line ri-spin"
+            <img
+              src="/upsense-logo.png" 
+              alt=""
               style={{
-                fontSize: "60px",
-                color: "#cfd8dc",
+                width: "120px",
+                height: "120px",
+                animation: "spin 1s linear infinite",
               }}
-            ></i>
+            />
             <div
               style={{
                 marginTop: "12px",
                 color: "#cfd8dc",
-                fontSize: "24px",
+                fontSize: "20px",
               }}
             >
               Waiting for AI reply...
@@ -925,7 +969,6 @@ function UserChat(props) {
                                         )))) && (
                                     <RenderDocPreview url={chat?.file_path} />
                                   )}
-
                                   {/* Text mesaj (https ile başlamıyorsa) */}
                                   {!chat?.message_content?.startsWith(
                                     "https"
@@ -994,14 +1037,14 @@ function UserChat(props) {
                                       </DropdownItem>
                                     ) : (
                                       <>
-                                        {chat?.sender_type === "contact" && (
+                                        {/* {chat?.sender_type === "contact" && (
                                           <DropdownItem
                                             onClick={() => handleAiClick(chat)}
                                           >
                                             <i className="ri-robot-2-line me-2 text-primary"></i>
                                             Reply with AI
                                           </DropdownItem>
-                                        )}
+                                        )} */}
                                       </>
                                     )}
                                   </DropdownMenu>
@@ -1056,6 +1099,8 @@ function UserChat(props) {
               isAiRes={isAiRes}
               setIsAiRes={setIsAiRes}
               anotherAiResponse={anotherAiResponse}
+              handleAiClick={handleAiClick}
+              chatMessages={chatMessages}
             />
           </div>
 

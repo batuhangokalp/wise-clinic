@@ -202,7 +202,10 @@ function Profile() {
                   <p className="text-muted mb-1">{t("Name")}</p>
                   <h5 className="font-size-14">{t(currentUser?.name)}</h5>
                 </div>
-
+                <div className="mt-4">
+                  <p className="text-muted mb-1">{t("Surname")}</p>
+                  <h5 className="font-size-14">{t(currentUser?.surname)}</h5>
+                </div>
                 <div className="mt-4">
                   <p className="text-muted mb-1">{t("Email")}</p>
                   <h5 className="font-size-14">{t(currentUser?.email)}</h5>

@@ -143,46 +143,51 @@ const Contacts = (props) => {
       return grouped;
     }, {});
   };
-
   const filteredContacts = (props.contacts || []).filter((contact) => {
     const fullName = `${contact.name} ${contact.surname}`.toLowerCase();
-    return fullName.includes(searchQuery.toLowerCase());
+    const phone = contact.phone_number?.toLowerCase() || "";
+    const email = contact.contact_email?.toLowerCase() || "";
+    const query = searchQuery.toLowerCase();
+
+    return (
+      fullName.includes(query) || phone.includes(query) || email.includes(query)
+    );
   });
 
   const groupedContacts = groupContactsByInitial(filteredContacts);
 
-const confirmBlockAction = async (contact) => {
-  if (!contact) return { success: false };
+  const confirmBlockAction = async (contact) => {
+    if (!contact) return { success: false };
 
-  try {
-    const url = contact.is_blocked
-      ? `${process.env.REACT_APP_API_URL}/api/contacts/unblock/${contact.id}`
-      : `${process.env.REACT_APP_API_URL}/api/contacts/block/${contact.id}`;
+    try {
+      const url = contact.is_blocked
+        ? `${process.env.REACT_APP_API_URL}/api/contacts/unblock/${contact.id}`
+        : `${process.env.REACT_APP_API_URL}/api/contacts/block/${contact.id}`;
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    });
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
 
-    if (!response.ok) throw new Error("Failed to update block status");
+      if (!response.ok) throw new Error("Failed to update block status");
 
-    toast.success(
-      contact.is_blocked
-        ? "Contact unblocked successfully."
-        : "Contact blocked successfully."
-    );
+      toast.success(
+        contact.is_blocked
+          ? "Contact unblocked successfully."
+          : "Contact blocked successfully."
+      );
 
-    await dispatch(fetchContacts());
-    return { success: true };
-  } catch (error) {
-    console.error("Error updating block status:", error);
-    toast.error("Failed to update block status.");
-    return { success: false };
-  } finally {
-    setConfirmBlockModal(false);
-    setContactToBlock(null);
-  }
-};
+      await dispatch(fetchContacts());
+      return { success: true };
+    } catch (error) {
+      console.error("Error updating block status:", error);
+      toast.error("Failed to update block status.");
+      return { success: false };
+    } finally {
+      setConfirmBlockModal(false);
+      setContactToBlock(null);
+    }
+  };
 
   const handleBlockedButtonClick = () => {
     toggleBlockedModal();

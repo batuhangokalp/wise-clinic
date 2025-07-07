@@ -44,6 +44,15 @@ function App() {
     layoutMode && localStorage.setItem("layoutMode", layoutMode);
   }, [layoutMode]);
 
+  useEffect(() => {
+    console.log("Mevcut bildirim izni:", Notification.permission);
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission().then((permission) => {
+        console.log("Yeni izin durumu:", permission);
+      });
+    }
+  }, []);
+
   return (
     <>
       <Routes />

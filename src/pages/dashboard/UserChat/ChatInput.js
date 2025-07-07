@@ -20,6 +20,7 @@ import { FileTypeId, findFileType } from "../../../helpers/chatConstants";
 import VoiceRecorder from "./VoiceRecorder";
 import { useTranslation } from "react-i18next";
 import { setTextMessage } from "../../../redux/chat/actions";
+import UpsenseLogo from "../../../assets/images/upsense-logo.png";
 
 function ChatInput(props) {
   /* intilize t variable for multi language implementation */
@@ -121,6 +122,20 @@ function ChatInput(props) {
       e?.target?.form.requestSubmit();
     }
   };
+
+  const getLastContactMessageBlock = (messages) => {
+    const result = [];
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg.sender_type === "contact") {
+        result.unshift(msg);
+      } else {
+        break;
+      }
+    }
+    return result;
+  };
+
   return (
     <div className="chat-input-section ps-3 pe-3 pb-3  ps-lg-4  pe-lg-4  pb-lg-4 border-top mb-0 ">
       <SendTemplateMessageModal
@@ -148,6 +163,37 @@ function ChatInput(props) {
           <Col xs="auto">
             <VoiceRecorder onAudioCapture={handleAudioCapture} />
           </Col>
+
+          <Col xs="auto">
+            <div className="chat-input-links ms-md-2">
+              <Button
+                id="ai"
+                color="link"
+                className="text-decoration-none font-size-16 btn-lg waves-effect p-0"
+                onClick={() => {
+                  const lastUserMessages = getLastContactMessageBlock(
+                    props.chatMessages
+                  );
+                  props.handleAiClick(lastUserMessages);
+                }}
+              >
+                <img
+                  src={UpsenseLogo}
+                  alt="Upsense AI"
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    objectFit: "contain",
+                  }}
+                />
+              </Button>
+
+              <UncontrolledTooltip target="ai" placement="top">
+                Artificial Intelligence
+              </UncontrolledTooltip>
+            </div>
+          </Col>
+
           <Col xs="auto">
             <div className="chat-input-links ms-md-2">
               <ul className="list-inline mb-0 ms-0">
