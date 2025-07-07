@@ -109,6 +109,11 @@ export default function DepartmentsCard(props) {
       showCancelButton: true,
       confirmButtonText: props.t("Yes, delete it!"),
       cancelButtonText: props.t("No, keep it"),
+      customClass: {
+        confirmButton: "btn btn-danger",
+        cancelButton: "btn btn-secondary",
+      },
+      buttonsStyling: false,
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {

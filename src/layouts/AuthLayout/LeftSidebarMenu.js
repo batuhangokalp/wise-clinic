@@ -18,7 +18,7 @@ import {
   hasPermission,
 } from "../../redux/actions";
 //Import Images
-import logo from "../../assets/images/logo.svg";
+import logo from "../../assets/images/upsense-logo.png";
 import avatar1 from "../../assets/images/users/avatar-1.jpg";
 //i18n
 import i18n from "../../i18n";
@@ -105,13 +105,13 @@ function LeftSidebarMenu(props) {
         <div className="navbar-brand-box">
           <Link to="/" className="logo logo-dark">
             <span className="logo-sm">
-              <img src={logo} alt="logo" height="30" />
+              <img src={logo} alt="logo" height="35" />
             </span>
           </Link>
 
           <Link to="/" className="logo logo-light">
             <span className="logo-sm">
-              <img src={logo} alt="logo" height="30" />
+              <img src={logo} alt="logo" height="35" />
             </span>
           </Link>
         </div>

@@ -101,6 +101,11 @@ export default function RolesCard({ t }) {
       showCancelButton: true,
       confirmButtonText: t("Yes, delete it!"),
       cancelButtonText: t("No, keep it"),
+      customClass: {
+        confirmButton: "btn btn-danger",
+        cancelButton: "btn btn-secondary",
+      },
+      buttonsStyling: false,
     }).then(async (result) => {
       if (result.isConfirmed) {
         const res = await dispatch(deleteRole(id));

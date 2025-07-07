@@ -584,13 +584,18 @@ function UserChat(props) {
     setShowPromptModal(false);
 
     try {
+      // Mesajları birleştir (örn. tümünü boşlukla birleştir)
+      const originalMessage = currentChat
+        .map((msg) => msg.message_content)
+        .join(" ");
+
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/api/ai/regenerate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            originalMessage: currentChat.message_content,
+            originalMessage,
             newPrompt: customPrompt,
             initialSuggestion: aiResponse,
           }),
@@ -607,7 +612,36 @@ function UserChat(props) {
       setCustomPrompt("");
     }
   };
+  const markConversationAsRead = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/messages/conversation/${props.activeConversation?.id}/mark-as-read`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! status: ${response.status}, body: ${errorText}`
+        );
+      }
+
+      const data = await response.json();
+
+      // console.log("✔️ Sohbet okunma durumu güncellendi:", data);
+      return data;
+    } catch (error) {
+      // console.error("❌ Okunma durumu güncellenirken hata:", error);
+      throw error;
+    }
+  };
   return (
     <div className="user-chat w-100 overflow-hidden">
       {aiLoading ? (
@@ -636,7 +670,7 @@ function UserChat(props) {
             }}
           >
             <img
-              src="/upsense-logo.png" 
+              src="/upsense-logo.png"
               alt=""
               style={{
                 width: "120px",
@@ -1101,6 +1135,7 @@ function UserChat(props) {
               anotherAiResponse={anotherAiResponse}
               handleAiClick={handleAiClick}
               chatMessages={chatMessages}
+              markConversationAsRead={markConversationAsRead}
             />
           </div>
 

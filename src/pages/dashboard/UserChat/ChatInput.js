@@ -137,7 +137,7 @@ function ChatInput(props) {
   };
 
   return (
-    <div className="chat-input-section ps-3 pe-3 pb-3  ps-lg-4  pe-lg-4  pb-lg-4 border-top mb-0 ">
+    <div className="chat-input-section ps-3 pe-3 pb-3  ps-lg-4  pe-lg-4  pb-lg-4 border-top mb-0">
       <SendTemplateMessageModal
         show={showSendTemplateMessageModal}
         template={selectedTemplate}
@@ -146,7 +146,7 @@ function ChatInput(props) {
         }}
       />
       <Form onSubmit={async (e) => await onaddMessage(e, textMessage)}>
-        <Row className="g-0 mt-2">
+        <Row className="g-0 mt-2 align-items-center">
           <Col>
             <div>
               <Input
@@ -157,6 +157,7 @@ function ChatInput(props) {
                 className="form-control form-control-lg bg-light border-light"
                 placeholder="Enter Message..."
                 rows={getRowCount(inputValue)}
+                onFocus={() => props.markConversationAsRead()}
               />
             </div>
           </Col>
