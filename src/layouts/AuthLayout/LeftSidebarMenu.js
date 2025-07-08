@@ -49,6 +49,14 @@ function LeftSidebarMenu(props) {
     })
   );
 
+  const conversations = useSelector((state) => state.Chat.conversations);
+
+  const unreadConversations = conversations.filter(
+    (conv) => conv.unread_count > 0
+  );
+
+  const hasUnread = unreadConversations.length > 0;
+
   const rawPermissions = currentRole?.permissions || [];
   const userPermissions = rawPermissions
     .flatMap((p) => PERMISSION_MAP[p] || [])
@@ -144,7 +152,7 @@ function LeftSidebarMenu(props) {
 
             {hasPermission(userPermissions, PERMISSIONS.VIEW_CHATS_PANEL) && (
               <>
-                <NavItem id="Chats">
+                <NavItem id="Chats" style={{ position: "relative" }}>
                   <NavLink
                     id="pills-chat-tab"
                     className={
@@ -155,6 +163,21 @@ function LeftSidebarMenu(props) {
                     }}
                   >
                     <i className="ri-message-3-line"></i>
+                    {hasUnread && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          top: "4px",
+                          right: "4px",
+                          width: "8px",
+                          height: "8px",
+                          backgroundColor: "red",
+                          borderRadius: "50%",
+                          display: "inline-block",
+                        }}
+                        title="Unread messages"
+                      ></span>
+                    )}
                   </NavLink>
                 </NavItem>
 
@@ -211,10 +234,7 @@ function LeftSidebarMenu(props) {
                 </UncontrolledTooltip>
               </>
             )}
-            {hasPermission(
-              userPermissions,
-              PERMISSIONS.VIEW_REPORTS_PANEL
-            ) && (
+            {hasPermission(userPermissions, PERMISSIONS.VIEW_REPORTS_PANEL) && (
               <>
                 <NavItem id="reports">
                   <NavLink
