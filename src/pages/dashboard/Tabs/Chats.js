@@ -154,51 +154,10 @@ class Chats extends Component {
     this.setState({ searchChat: e.target.value });
   }
 
-  markConversationAsRead = async (apiUrl, chatId) => {
-    try {
-      const response = await fetch(
-        `${apiUrl}/api/messages/conversation/${chatId}/mark-as-read`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `HTTP error! status: ${response.status}, body: ${errorText}`
-        );
-      }
-
-      const data = await response.json();
-
-      // console.log("✔️ Sohbet okunma durumu güncellendi:", data);
-      return data;
-    } catch (error) {
-      // console.error("❌ Okunma durumu güncellenirken hata:", error);
-      throw error;
-    }
-  };
-
   async openUserChat(e, chat) {
-    const apiUrl = this.props.API_URL;
     const chatId = chat?.id;
 
     e.preventDefault();
-
-    if (chat?.unread_count > 0 && chat.last_message_id) {
-      try {
-        await this.markConversationAsRead(apiUrl, chatId);
-        await this.props.fetchConversations();
-      } catch (err) {
-        // hata zaten üstte loglanıyor
-      }
-    }
 
     if (!chat?.last_message) {
       this.props.setChatMessages([]);

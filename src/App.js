@@ -45,10 +45,9 @@ function App() {
   }, [layoutMode]);
 
   useEffect(() => {
-    console.log("Mevcut bildirim izni:", Notification.permission);
     if ("Notification" in window && Notification.permission !== "granted") {
       Notification.requestPermission().then((permission) => {
-        console.log("Yeni izin durumu:", permission);
+        //console.log("Yeni izin durumu:", permission);
       });
     }
   }, []);

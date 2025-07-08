@@ -28,8 +28,7 @@ export const SET_TEXT_MESSAGE = 'SET_TEXT_MESSAGE'
 export const UPLOAD_FILE_REQUEST = 'UPLOAD_FILE_REQUEST'
 export const UPLOAD_FILE_SUCCESS = 'UPLOAD_FILE_SUCCESS'
 export const UPLOAD_FILE_FAILURE = 'UPLOAD_FILE_FAILURE'
-
-
+export const UPDATE_CONVERSATIONS = 'UPDATE_CONVERSATIONS'
 
 export const ChatPlatform = {
     Whatsapp: 3,

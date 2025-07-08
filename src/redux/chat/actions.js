@@ -447,3 +447,16 @@ export const uploadFile = (request) => {
     }
   };
 };
+
+export const markConversationAsReadInList = (conversationId) => (dispatch, getState) => {
+  const { conversations } = getState().Chat;
+
+  const updatedConversations = conversations.map(conv =>
+    conv.id === conversationId ? { ...conv, unread_count: 0 } : conv
+  );
+
+  dispatch({
+    type: 'UPDATE_CONVERSATIONS',
+    payload: updatedConversations,
+  });
+};

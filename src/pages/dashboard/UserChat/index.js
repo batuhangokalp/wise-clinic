@@ -20,7 +20,6 @@ import UserProfileSidebar from "../../../components/UserProfileSidebar";
 import SelectContact from "../../../components/SelectContact";
 import UserHead from "./UserHead";
 import ChatInput from "./ChatInput";
-import FileList from "./FileList";
 import { showChatMessageTime } from "../../../helpers/chatUtils";
 import { FileTypeId, findFileType } from "../../../helpers/chatConstants";
 import SendFileModal from "./SendFileModal";
@@ -28,13 +27,14 @@ import { downloadFile } from "../../../helpers/fileUtils";
 import {
   fetchConversations,
   fetchMessagesByConversationId,
+  markConversationAsReadInList,
+  setActiveConversation,
   setChatMessagesPage,
 } from "../../../redux/chat/actions";
 import { throttle } from "lodash";
 
 //actions
 import {
-  fetchContactById,
   hasPermission,
   openUserSidebar,
   setChatMessages,
@@ -53,11 +53,11 @@ import RenderPDFFirstPage from "./RenderPDFFirstPage";
 import RenderFilePreview from "./RenderFilePreview";
 import { PERMISSION_MAP, PERMISSIONS } from "../../../redux/role/constants";
 import PermissionWrapper from "../../../components/PermissionWrapper";
-import axios from "axios";
 import AiSuggestionModal from "./AiSuggestionModal";
 import AIPromptInputModal from "./AIPromptInputModal";
 import RenderDocPreview from "./RenderDoc";
 import { toast } from "react-toastify";
+import MarkAsReadButton from "../../../components/MarkAsReadButton";
 
 function UserChat(props) {
   const dispatch = useDispatch();
@@ -66,13 +66,13 @@ function UserChat(props) {
   const roles = useSelector((state) => state.Role.roles);
   const currentUser = useSelector((state) => state.User.user);
   const currentRole = roles.find((role) => role.id === roleId);
+
   const ref = useRef();
   const chatEndRef = useRef(null);
   const [modal, setModal] = useState(false);
 
   /* intilize t variable for multi language implementation */
   const { t } = useTranslation();
-
   //demo conversation messages
   //sender_type must be required
   const chatMessages = useSelector((state) => state.Chat?.chatMessages);
@@ -131,7 +131,7 @@ function UserChat(props) {
     // Clean up the socket connection when the component is unmounted
     return () => {
       socketInstance.disconnect();
-      console.log("Disconnected from the server");
+      //console.log("Disconnected from the server");
     };
   }, [SOCKET_SERVER_URL]);
 
@@ -535,18 +535,15 @@ function UserChat(props) {
   }
 
   const handleAiClick = async (messages) => {
-    console.log("messages:", messages);
-    setCurrentChat(messages); // İstersen sadece son mesajı da set edebilirsin
+    setCurrentChat(messages);
     setAiModalOpen(true);
     setAiLoading(true);
 
     try {
-      // Mesaj içeriklerini birleştir
       const combinedMessage = messages
         .map((msg) => msg.message_content)
         .join("\n");
 
-      console.log("objects:", combinedMessage);
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/api/ai/suggestions`,
         {
@@ -635,13 +632,21 @@ function UserChat(props) {
 
       const data = await response.json();
 
-      // console.log("✔️ Sohbet okunma durumu güncellendi:", data);
+      const updatedConversation = {
+        ...props.activeConversation,
+        unread_count: 0,
+      };
+
+      dispatch(setActiveConversation(updatedConversation));
+
+      dispatch(markConversationAsReadInList(props.activeConversation.id));
+
       return data;
     } catch (error) {
-      // console.error("❌ Okunma durumu güncellenirken hata:", error);
       throw error;
     }
   };
+
   return (
     <div className="user-chat w-100 overflow-hidden">
       {aiLoading ? (
@@ -1060,7 +1065,7 @@ function UserChat(props) {
                                     <i className="ri-more-2-fill"></i>
                                   </DropdownToggle>
                                   <DropdownMenu>
-                                    {chat?.file_type_id ? (
+                                    {chat?.file_type_id && (
                                       <DropdownItem
                                         onClick={() =>
                                           downloadFile(chat?.file_path)
@@ -1069,17 +1074,6 @@ function UserChat(props) {
                                         {t("Download")}
                                         <i className="ri-file-download-line float-end text-muted"></i>
                                       </DropdownItem>
-                                    ) : (
-                                      <>
-                                        {/* {chat?.sender_type === "contact" && (
-                                          <DropdownItem
-                                            onClick={() => handleAiClick(chat)}
-                                          >
-                                            <i className="ri-robot-2-line me-2 text-primary"></i>
-                                            Reply with AI
-                                          </DropdownItem>
-                                        )} */}
-                                      </>
                                     )}
                                   </DropdownMenu>
                                 </UncontrolledDropdown>
@@ -1106,6 +1100,12 @@ function UserChat(props) {
                       </li>
                     )
                   )}
+                {props.activeConversation?.unread_count > 0 && (
+                  <MarkAsReadButton
+                    count={props.activeConversation?.unread_count || 0}
+                    onClick={markConversationAsRead}
+                  />
+                )}
 
                 {/* Chat End Reference */}
                 <li ref={chatEndRef} />
@@ -1135,7 +1135,6 @@ function UserChat(props) {
               anotherAiResponse={anotherAiResponse}
               handleAiClick={handleAiClick}
               chatMessages={chatMessages}
-              markConversationAsRead={markConversationAsRead}
             />
           </div>
 

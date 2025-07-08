@@ -157,7 +157,6 @@ function ChatInput(props) {
                 className="form-control form-control-lg bg-light border-light"
                 placeholder="Enter Message..."
                 rows={getRowCount(inputValue)}
-                onFocus={() => props.markConversationAsRead()}
               />
             </div>
           </Col>
