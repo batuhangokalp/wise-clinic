@@ -86,6 +86,12 @@ function UserChat(props) {
   const [showPromptModal, setShowPromptModal] = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
   const [anotherAiResponse, setAnotherAiResponse] = useState(null);
+  const [chatLoading, setChatLoading] = useState(true);
+  useEffect(() => {
+    if (chatMessages && chatMessages.length > 0) {
+      setChatLoading(false);
+    }
+  }, [chatMessages]);
 
   useEffect(() => {
     const fetchBitrixData = async () => {
@@ -135,108 +141,107 @@ function UserChat(props) {
     };
   }, [SOCKET_SERVER_URL]);
 
-  const playNotificationSound = () => {
-    const audio = new Audio("/notifications.wav");
-    audio.play().catch((err) => {
-      console.warn("Ses çalınamadı:", err);
-    });
-  };
+  // const playNotificationSound = () => {
+  //   const audio = new Audio("/notifications.wav");
+  //   audio.play().catch((err) => {
+  //     console.warn("Ses çalınamadı:", err);
+  //   });
+  // };
 
-  const showDesktopNotification = (title, message) => {
-    if (Notification.permission === "granted") {
-      try {
-        new Notification(title, {
-          body: message,
-          icon: "/upsense-logo.png",
-        });
-      } catch (error) {
-        //console.error("Bildirim gönderilemedi:", error);
-      }
-    } else {
-      //console.log("Bildirim izni yok.");
-    }
-  };
-  const contacts = useSelector((state) => state.Contact.contacts);
+  // const showDesktopNotification = (title, message) => {
+  //   if (Notification.permission === "granted") {
+  //     try {
+  //       new Notification(title, {
+  //         body: message,
+  //         icon: "/upsense-logo.png",
+  //       });
+  //     } catch (error) {
+  //       //console.error("Bildirim gönderilemedi:", error);
+  //     }
+  //   } else {
+  //     //console.log("Bildirim izni yok.");
+  //   }
+  // };
 
-  useEffect(() => {
-    if (socket) {
-      const handleConnect = () => console.log("Connected to server");
+  // useEffect(() => {
+  //   if (socket) {
+  //     const handleConnect = () => console.log("Connected to server");
 
-      const handleMessage = (message) => {
-        const contact = contacts.find((c) => c.id === message.senderId);
-        const senderName = contact?.name || "";
-        const senderSurname = contact?.surname || "";
-        playNotificationSound();
-        showDesktopNotification(
-          `${senderName} ${senderSurname} sent message!`,
-          message.message
-        );
-        if (chatMessages?.length > 0) {
-          let data = {
-            id: chatMessages[chatMessages.length - 1]?.id + 1,
-            message_content: message?.message,
-            created_at: message?.timestamp,
-            sender_type: "receiver",
-            conversationId: message?.conversationId,
-            mediaType: message?.mediaType,
-            mediaUrl: message?.mediaUrl,
-            message: message?.message,
-            senderId: message?.senderId,
-            timestamp: message?.timestamp,
-            file_type_id: findFileType(message?.mediaType),
-            file_path: message?.mediaUrl,
-          };
+  //     const handleMessage = (message) => {
+  //       const contact = contacts.find((c) => c.id === message.senderId);
+  //       const senderName = contact?.name || "";
+  //       const senderSurname = contact?.surname || "";
+  //       playNotificationSound();
+  //       showDesktopNotification(
+  //         `${senderName} ${senderSurname} sent message!`,
+  //         message.message
+  //       );
+  //       if (chatMessages?.length > 0) {
+  //         let data = {
+  //           id: chatMessages[chatMessages.length - 1]?.id + 1,
+  //           message_content: message?.message,
+  //           created_at: message?.timestamp,
+  //           sender_type: "receiver",
+  //           conversationId: message?.conversationId,
+  //           mediaType: message?.mediaType,
+  //           mediaUrl: message?.mediaUrl,
+  //           message: message?.message,
+  //           senderId: message?.senderId,
+  //           timestamp: message?.timestamp,
+  //           file_type_id: findFileType(message?.mediaType),
+  //           file_path: message?.mediaUrl,
+  //         };
 
-          dispatch(setChatMessages([...chatMessages, data]));
+  //         dispatch(setChatMessages([...chatMessages, data]));
 
-          scrollToBottom();
-        }
-      };
+  //         scrollToBottom();
+  //       }
+  //     };
 
-      const handleNewMessage = (message) => {
-        let messageSender = message?.senderId;
-        let conversation = props.conversations.find(
-          (conversation) => conversation?.phone_number === messageSender
-        );
-        if (conversation) {
-          conversation.last_message = message?.message ?? t("Media Message");
-          conversation.unRead =
-            conversation.unRead && conversation.unRead >= 0
-              ? conversation.unRead + 1
-              : 1;
-          conversation.updated_at = new Date();
+  //     const handleNewMessage = (message) => {
+  //       let messageSender = message?.senderId;
+  //       let conversation = props.conversations.find(
+  //         (conversation) => conversation?.phone_number === messageSender
+  //       );
+  //       if (conversation) {
+  //         conversation.last_message = message?.message ?? t("Media Message");
+  //         conversation.unRead =
+  //           conversation.unRead && conversation.unRead >= 0
+  //             ? conversation.unRead + 1
+  //             : 1;
+  //         conversation.updated_at = new Date();
 
-          let currentConversations = props.conversations.filter(
-            (conversation) => conversation?.phone_number !== messageSender
-          );
-          currentConversations.unshift(conversation);
-          dispatch(setConversations(currentConversations));
-        }
-      };
-      // Reset chatMessages when conversation changes
-      socket.on("connect", handleConnect);
-      socket.on("new_message", handleNewMessage);
+  //         let currentConversations = props.conversations.filter(
+  //           (conversation) => conversation?.phone_number !== messageSender
+  //         );
+  //         currentConversations.unshift(conversation);
+  //         dispatch(setConversations(currentConversations));
+  //       }
+  //     };
+  //     // Reset chatMessages when conversation changes
+  //     socket.on("connect", handleConnect);
+  //     socket.on("new_message", handleNewMessage);
 
-      // Dynamically handle conversation updates based on activeConversationId
-      socket.on(`conversation_${props.activeConversationId}`, handleMessage);
+  //     // Dynamically handle conversation updates based on activeConversationId
+  //     socket.on(`conversation_${props.activeConversationId}`, handleMessage);
 
-      socket.on(`conversation_update`, handleMessage);
+  //     socket.on(`conversation_update`, handleMessage);
 
-      return () => {
-        socket.off("connect", handleConnect);
-        socket.off(`conversation_${props.activeConversationId}`, handleMessage);
-        socket.off("new_message", handleNewMessage);
-        socket.off("conversation_update", handleMessage);
-      };
-    }
-  }, [
-    socket,
-    props.activeConversationId,
-    props.conversations,
-    chatMessages,
-    dispatch,
-    t,
-  ]);
+  //     return () => {
+  //       socket.off("connect", handleConnect);
+  //       socket.off(`conversation_${props.activeConversationId}`, handleMessage);
+  //       socket.off("new_message", handleNewMessage);
+  //       socket.off("conversation_update", handleMessage);
+  //     };
+  //   }
+  // }, [
+  //   socket,
+  //   props.activeConversationId,
+  //   props.conversations,
+  //   chatMessages,
+  //   dispatch,
+  //   t,
+  // ]);
 
   useEffect(() => {
     if (!socket) return;
@@ -649,7 +654,42 @@ function UserChat(props) {
 
   return (
     <div className="user-chat w-100 overflow-hidden">
-      {aiLoading ? (
+      {chatLoading ? (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.4)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+            flexDirection: "column",
+          }}
+        >
+          <img
+            src="/upsense-logo.png"
+            alt=""
+            style={{
+              width: "150px",
+              height: "150px",
+              animation: "spin 1s linear infinite",
+            }}
+          />
+          <div
+            style={{
+              marginTop: "12px",
+              color: "#cfd8dc",
+              fontSize: "20px",
+            }}
+          >
+            Loading chat messages...
+          </div>
+        </div>
+      ) : aiLoading ? (
         <div
           style={{
             position: "fixed",

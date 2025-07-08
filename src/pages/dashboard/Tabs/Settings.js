@@ -16,7 +16,7 @@ function Settings(props) {
   const roleId = useSelector((state) => state.User.user?.role_id);
   const [activeTab, setActiveTab] = useState("roles");
   const { t } = useTranslation();
-
+  const [loading, setLoading] = useState(true);
   const roles = useSelector((state) => state.Role.roles);
   const currentRole = roles.find((role) => role.id === roleId);
 
@@ -49,7 +49,47 @@ function Settings(props) {
     ) {
       setActiveTab("canned_responses");
     }
+    setLoading(false);
   }, []);
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(0,0,0,0.4)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+          flexDirection: "column",
+        }}
+      >
+        <img
+          src="/upsense-logo.png"
+          alt=""
+          style={{
+            width: "150px",
+            height: "150px",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+        <div
+          style={{
+            marginTop: "12px",
+            color: "#cfd8dc",
+            fontSize: "20px",
+          }}
+        >
+          Loading settings...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container-fluid w-100 align-items-center">

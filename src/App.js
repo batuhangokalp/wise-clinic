@@ -9,6 +9,7 @@ import fakeBackend from "./helpers/fake-backend";
 import { useSelector } from "react-redux";
 import { createSelector } from "reselect";
 import { ToastContainer } from "react-toastify";
+import GlobalSocketHandler from "./GlobalSocketHandler";
 
 // //Firebase helper
 // import { initFirebaseBackend } from "./helpers/firebase";
@@ -68,6 +69,7 @@ function App() {
         pauseOnHover
         theme="colored"
       />
+      <GlobalSocketHandler />
     </>
   );
 }

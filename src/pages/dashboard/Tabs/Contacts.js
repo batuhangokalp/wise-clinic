@@ -36,6 +36,7 @@ const Contacts = (props) => {
   const [blockedModal, setBlockedModal] = useState(false);
   const [blockedContacts, setBlockedContacts] = useState([]);
   const [loadingBlocked, setLoadingBlocked] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [selectedContact, setSelectedContact] = useState({
     assigned_user_id: null,
@@ -130,8 +131,18 @@ const Contacts = (props) => {
   };
 
   useEffect(() => {
-    dispatch(fetchContacts());
-  }, []);
+    const loadContacts = async () => {
+      try {
+        await dispatch(fetchContacts());
+      } catch (error) {
+        console.error("Contacts fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadContacts();
+  }, [dispatch]);
 
   const groupContactsByInitial = (contacts) => {
     return contacts.reduce((grouped, contact) => {
@@ -216,6 +227,46 @@ const Contacts = (props) => {
       setLoadingBlocked(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(0,0,0,0.4)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+          flexDirection: "column",
+        }}
+      >
+        <img
+          src="/upsense-logo.png"
+          alt=""
+          style={{
+            width: "150px",
+            height: "150px",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+        <div
+          style={{
+            marginTop: "12px",
+            color: "#cfd8dc",
+            fontSize: "20px",
+          }}
+        >
+          Loading contacts...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <React.Fragment>
       <div>

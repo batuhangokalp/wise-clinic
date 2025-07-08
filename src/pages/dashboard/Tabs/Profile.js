@@ -109,7 +109,44 @@ function Profile() {
     });
   };
 
-  if (loading) return <p className="p-4">{t("Loading...")}</p>;
+  if (loading) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(0,0,0,0.4)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+          flexDirection: "column",
+        }}
+      >
+        <img
+          src="/upsense-logo.png"
+          alt=""
+          style={{
+            width: "150px",
+            height: "150px",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+        <div
+          style={{
+            marginTop: "12px",
+            color: "#cfd8dc",
+            fontSize: "20px",
+          }}
+        >
+          Loading profile...
+        </div>
+      </div>
+    );
+  }
   if (!user) return <p className="p-4 text-danger">{t("User not found")}</p>;
 
   return (
