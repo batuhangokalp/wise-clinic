@@ -32,6 +32,7 @@ function ChatInput(props) {
   const [fileImage, setfileImage] = useState("");
   const [audioMessage, setAudioMessage] = useState(null);
   const [inputValue, setInputValue] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const chatFile = useSelector((state) => state.Chat.chatFile);
   useEffect(() => {
@@ -160,12 +161,104 @@ function ChatInput(props) {
               />
             </div>
           </Col>
+          {/* Only visible on mobile */}
+          <Col xs="auto" className="d-lg-none">
+            <Button
+              color="link"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-decoration-none font-size-16 btn-lg waves-effect"
+            >
+              <i className="ri-more-2-fill"></i>
+            </Button>
+          </Col>
+
+          {isMobileMenuOpen && (
+            <div className="mobile-menu-actions p-3 border-top bg-white d-lg-none">
+              <ul className="list-inline mb-0 d-flex justify-content-around align-items-center">
+                {/* AI */}
+                <li>
+                  <Button
+                    color="link"
+                    onClick={() => {
+                      const lastUserMessages = getLastContactMessageBlock(
+                        props.chatMessages
+                      );
+                      props.handleAiClick(lastUserMessages);
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <img
+                      src={UpsenseLogo}
+                      alt="Upsense AI"
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        objectFit: "contain",
+                      }}
+                    />
+                  </Button>
+                </li>
+
+                {/* Emoji */}
+                <li>
+                  <Button
+                    color="link"
+                    onClick={() => {
+                      setisOpen(!isOpen);
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <i className="ri-emotion-happy-line"></i>
+                  </Button>
+                </li>
+
+                {/* Template */}
+                <li>
+                  <Button
+                    color="link"
+                    onClick={() => {
+                      setisTemplatePickerOpen(!isTemplatePickerOpen);
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <i className="ri-command-line"></i>
+                  </Button>
+                </li>
+
+                {/* File Upload */}
+                <li>
+                  <Label className="btn btn-link p-0 m-0">
+                    <i className="ri-attachment-line"></i>
+                    <Input
+                      onChange={handleFileChange}
+                      type="file"
+                      className="d-none"
+                    />
+                  </Label>
+                </li>
+
+                {/* Image Upload */}
+                <li>
+                  <Label className="btn btn-link p-0 m-0">
+                    <i className="ri-image-fill"></i>
+                    <Input
+                      onChange={handleImageChange}
+                      type="file"
+                      accept="image/*"
+                      className="d-none"
+                    />
+                  </Label>
+                </li>
+              </ul>
+            </div>
+          )}
+
           <Col xs="auto">
             <VoiceRecorder onAudioCapture={handleAudioCapture} />
           </Col>
 
           <Col xs="auto">
-            <div className="chat-input-links ms-md-2">
+            <div className="chat-input-links ms-md-2 d-none d-lg-block">
               <Button
                 id="ai"
                 color="link"
@@ -187,7 +280,6 @@ function ChatInput(props) {
                   }}
                 />
               </Button>
-
               <UncontrolledTooltip target="ai" placement="top">
                 Ask to Upsense
               </UncontrolledTooltip>
@@ -195,7 +287,7 @@ function ChatInput(props) {
           </Col>
 
           <Col xs="auto">
-            <div className="chat-input-links ms-md-2">
+            <div className="chat-input-links ms-md-2 d-none d-lg-block">
               <ul className="list-inline mb-0 ms-0">
                 <li className="list-inline-item">
                   <ButtonDropdown
@@ -227,7 +319,7 @@ function ChatInput(props) {
           </Col>
 
           <Col xs="auto">
-            <div className="chat-input-links ms-md-2">
+            <div className="chat-input-links ms-md-2 d-none d-lg-block">
               <ul className="list-inline mb-0 ms-0">
                 <li className="list-inline-item">
                   <ButtonDropdown

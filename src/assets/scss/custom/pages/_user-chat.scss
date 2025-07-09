@@ -296,6 +296,15 @@
         margin: 0;
     }
 }
+.mobile-menu-actions {
+  position: fixed;
+  bottom: 70px; 
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background-color: white;
+  border-top: 1px solid #ddd;
+}
 
 .animate-typing {
 	.dot {

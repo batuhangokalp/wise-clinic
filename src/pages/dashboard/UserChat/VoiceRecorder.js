@@ -17,14 +17,9 @@ function VoiceRecorder({ onAudioCapture }) {
     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
       options = { mimeType: "audio/mpeg" };
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        // Burada webm varsayılanı değil, "audio/ogg" codec olmadan deneyebiliriz
-        options = { mimeType: "audio/ogg" };
-        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-          options = {}; // tamamen varsayılan
-        }
+        options = {}; 
       }
     }
-
     mediaRecorderRef.current = new MediaRecorder(stream, options);
 
     audioChunksRef.current = [];
@@ -36,9 +31,9 @@ function VoiceRecorder({ onAudioCapture }) {
     };
 
     mediaRecorderRef.current.onstop = () => {
-      const mimeType = options.mimeType || "audio/ogg";
+      const mimeType = options.mimeType || "audio/webm";
       const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-      console.log("Recorded blob type:", audioBlob.type);
+      console.log("object", audioBlob)
       setAudioBlob(audioBlob);
       const audioURL = URL.createObjectURL(audioBlob);
       onAudioCapture(audioBlob, audioURL);
