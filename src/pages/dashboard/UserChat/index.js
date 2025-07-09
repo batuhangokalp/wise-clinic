@@ -1198,6 +1198,7 @@ function UserChat(props) {
             loading={aiLoading}
             onAccept={handleAccept}
             onReject={handleReject}
+            onClose={() => setAiModalOpen(false)}
           />
 
           <AIPromptInputModal

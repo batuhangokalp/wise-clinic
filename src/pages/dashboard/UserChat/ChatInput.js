@@ -189,7 +189,7 @@ function ChatInput(props) {
               </Button>
 
               <UncontrolledTooltip target="ai" placement="top">
-                Artificial Intelligence
+                Ask to Upsense
               </UncontrolledTooltip>
             </div>
           </Col>

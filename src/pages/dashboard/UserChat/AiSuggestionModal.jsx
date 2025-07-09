@@ -1,19 +1,19 @@
-import React from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 
 function AiSuggestionModal({
   isOpen,
   suggestion,
-  anotherSuggestion, // yeni prop
+  anotherSuggestion,
   onAccept,
   onReject,
+  onClose, 
   loading,
 }) {
   const finalSuggestion = anotherSuggestion || suggestion;
 
   return (
-    <Modal isOpen={isOpen} backdrop="static" centered>
-      <ModalHeader>AI Suggestion</ModalHeader>
+    <Modal isOpen={isOpen} backdrop="static" centered toggle={onClose}>
+      <ModalHeader toggle={onClose}>AI Suggestion</ModalHeader>
       <ModalBody>
         {loading ? (
           <div style={{ textAlign: "center" }}>
