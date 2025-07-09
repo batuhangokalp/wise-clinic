@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FileTypeId, findFileType } from "../../../helpers/chatConstants";
 
-export default function RenderDocPreview({ url, chatFile }) {
+export default function RenderDocPreview({ url, chatFile, senderType }) {
   const [fileUrl, setFileUrl] = useState(null);
 
   const extension = url
@@ -45,7 +45,13 @@ export default function RenderDocPreview({ url, chatFile }) {
           style={{ fontSize: "50px", color: iconColor }}
         />
         {fileUrl && (
-          <a href={fileUrl} target="_blank" rel="noopener noreferrer" download>
+          <a
+            href={fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            download
+            style={{ color: senderType === "contact" ? "white" : "black" }}
+          >
             Download
           </a>
         )}

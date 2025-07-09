@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Nav,
@@ -34,9 +34,14 @@ import { useTranslation } from "react-i18next";
 import { PERMISSION_MAP, PERMISSIONS } from "../../redux/role/constants";
 
 function LeftSidebarMenu(props) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   const roleId = useSelector((state) => state.User.user?.role_id);
   const roles = useSelector((state) => state.Role.roles);
   const currentRole = roles.find((role) => role.id === roleId);
+  const conversations = useSelector((state) => state.Chat.conversations);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,8 +53,11 @@ function LeftSidebarMenu(props) {
       layoutMode: layout.layoutMode,
     })
   );
-
-  const conversations = useSelector((state) => state.Chat.conversations);
+  const userInfo = useMemo(() => {
+    const stored = localStorage.getItem("authUser");
+    return stored ? JSON.parse(stored) : null;
+  }, []);
+  const currentUser = user?.user;
 
   const unreadConversations = conversations.filter(
     (conv) => conv.unread_count > 0
@@ -105,6 +113,38 @@ function LeftSidebarMenu(props) {
       }
     }
   }, [location.search, props.setActiveTab]);
+
+  useEffect(() => {
+    if (!userInfo?.id) return;
+
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/users/${userInfo.id}`,
+          {
+            headers: {
+              Accept: "application/json",
+              "ngrok-skip-browser-warning": 69420,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Kullanıcı alınamadı: ${res.status} - ${errText}`);
+        }
+
+        const data = await res.json();
+        setUser(data);
+      } catch (err) {
+        console.error("fetchUser hatası:", err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [userInfo?.id]);
 
   return (
     <React.Fragment>
@@ -262,11 +302,25 @@ function LeftSidebarMenu(props) {
               className="profile-user-dropdown d-inline-block d-lg-none dropup"
             >
               <DropdownToggle nav>
-                <img
-                  src={avatar1}
-                  alt="chatvia"
-                  className="profile-user rounded-circle"
-                />
+                {currentUser?.avatar ? (
+                  <img
+                    src={currentUser?.avatar}
+                    alt=""
+                    className="profile-user rounded-circle"
+                  />
+                ) : (
+                  <div
+                    className="rounded-circle avatar-lg img-thumbnail d-flex align-items-center justify-content-center bg-primary text-white fw-bold"
+                    style={{
+                      fontSize: "20px",
+                      width: "35px",
+                      height: "35px",
+                      margin: "0 auto",
+                    }}
+                  >
+                    {currentUser?.name?.charAt(0)?.toUpperCase()}
+                  </div>
+                )}
               </DropdownToggle>
               <DropdownMenu className="dropdown-menu-end">
                 <DropdownItem
@@ -369,11 +423,25 @@ function LeftSidebarMenu(props) {
               toggle={toggle}
             >
               <DropdownToggle className="nav-link mb-2" tag="a">
-                <img
-                  src={avatar1}
-                  alt=""
-                  className="profile-user rounded-circle"
-                />
+                {currentUser?.avatar ? (
+                  <img
+                    src={currentUser?.avatar}
+                    alt=""
+                    className="profile-user rounded-circle"
+                  />
+                ) : (
+                  <div
+                    className="rounded-circle avatar-lg img-thumbnail d-flex align-items-center justify-content-center bg-primary text-white fw-bold"
+                    style={{
+                      fontSize: "20px",
+                      width: "40px",
+                      height: "40px",
+                      margin: "0 auto",
+                    }}
+                  >
+                    {currentUser?.name?.charAt(0)?.toUpperCase()}
+                  </div>
+                )}
               </DropdownToggle>
               <DropdownMenu>
                 <DropdownItem

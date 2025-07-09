@@ -835,8 +835,9 @@ function UserChat(props) {
                                 )}
                                 {(FileTypeId.TextFile ===
                                   Number(chat?.file_type_id) ||
-                                  (Number(chat?.file_type_id) ===
-                                    FileTypeId.Document[0] &&
+                                  (FileTypeId.Document.includes(
+                                    Number(chat?.file_type_id)
+                                  ) &&
                                     (chat?.file_path?.endsWith(".txt") ||
                                       chat?.file_path?.endsWith(".doc") ||
                                       chat?.file_path?.endsWith(".docx")))) && (
@@ -1005,7 +1006,6 @@ function UserChat(props) {
                                   {FileTypeId.Image?.includes(
                                     chat?.file_type_id
                                   ) && <RenderImage url={chat?.file_path} />}
-
                                   {FileTypeId.Document.includes(
                                     Number(chat?.file_type_id)
                                   ) &&
@@ -1016,6 +1016,7 @@ function UserChat(props) {
                                     ) : (
                                       <RenderFilePreview
                                         url={chat?.file_path}
+                                        senderType={chat?.sender_type}
                                       />
                                     ))}
                                   {/* Video varsa */}
@@ -1034,20 +1035,28 @@ function UserChat(props) {
                                     (Number(chat?.file_type_id) ===
                                       FileTypeId.Document[0] &&
                                       chat?.file_path?.endsWith(".txt"))) && (
-                                    <RenderFilePreview url={chat?.file_path} />
+                                    <RenderFilePreview
+                                      url={chat?.file_path}
+                                      senderType={chat?.sender_type}
+                                    />
                                   )}
                                   {/* Text dosyası, Word dosyası veya txt dosyası */}
                                   {(FileTypeId.TextFile ===
                                     Number(chat?.file_type_id) ||
-                                    (Number(chat?.file_type_id) ===
-                                      FileTypeId.Document[0] &&
+                                    (FileTypeId.Document.includes(
+                                      Number(chat?.file_type_id)
+                                    ) &&
                                       (chat?.file_path?.endsWith(".txt") ||
                                         chat?.file_path?.endsWith(".doc") ||
                                         chat?.file_path?.endsWith(
                                           ".docx"
                                         )))) && (
-                                    <RenderDocPreview url={chat?.file_path} />
+                                    <RenderDocPreview
+                                      url={chat?.file_path}
+                                      senderType={chat?.sender_type}
+                                    />
                                   )}
+
                                   {/* Text mesaj (https ile başlamıyorsa) */}
                                   {!chat?.message_content?.startsWith(
                                     "https"

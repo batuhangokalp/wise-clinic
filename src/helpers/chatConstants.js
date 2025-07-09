@@ -2,7 +2,7 @@ export const FileTypeId = {
   Image: [9, 19, 24],
   Audio: [15, 23, 25],
   Video: [14, 26],
-  Document: [10, 11, 18, 22],
+  Document: [10, 11, 16, 18, 22, 27],
   TextFile: 22,
   Text: null,
 };

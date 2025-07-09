@@ -10,7 +10,7 @@ const GlobalSocketHandler = () => {
     (state) => state.Chat.activeConversationId
   );
   const chatMessages = useSelector((state) => state.Chat.chatMessages);
-  const contacts = useSelector((state) => state.Contact.contacts); // varsa
+  const contacts = useSelector((state) => state.Contact.contacts);
 
   const playNotificationSound = () => {
     const audio = new Audio("/notifications.wav");
@@ -100,7 +100,7 @@ const GlobalSocketHandler = () => {
     dispatch,
   ]);
 
-  return null; // UI göstermeye gerek yok
+  return null;
 };
 
 export default GlobalSocketHandler;
