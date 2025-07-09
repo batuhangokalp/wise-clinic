@@ -331,14 +331,14 @@ function LeftSidebarMenu(props) {
                   Profile{" "}
                   <i className="ri-profile-line float-end text-muted"></i>
                 </DropdownItem>
-                <DropdownItem
+                {/* <DropdownItem
                   onClick={() => {
                     toggleTab("settings");
                   }}
                 >
                   Setting{" "}
                   <i className="ri-settings-3-line float-end text-muted"></i>
-                </DropdownItem>
+                </DropdownItem> */}
                 <DropdownItem divider />
                 <DropdownItem href="/logout">
                   Log out{" "}
