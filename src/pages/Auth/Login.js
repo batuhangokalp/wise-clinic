@@ -29,8 +29,8 @@ import { apiSuccess, loginUserAction } from "./../../redux/auth/actions";
 import { fetchUserById } from "./../../redux/user/actions";
 
 //Import Images
-import logodark from "../../assets/images/logo.svg";
-import logolight from "../../assets/images/logo.svg";
+import logodark from "../../assets/images/upsense-logo.png";
+import logolight from "../../assets/images/upsense-logo.png";
 
 const Login = (props) => {
   const dispatch = useDispatch();
@@ -151,15 +151,15 @@ const Login = (props) => {
                   <img
                     src={logodark}
                     alt=""
-                    height="30"
+                    height="80"
                     className="logo logo-dark"
                   />
-                  <img
+                  {/* <img
                     src={logolight}
                     alt=""
                     height="30"
                     className="logo logo-light"
-                  />
+                  /> */}
                 </Link>
                 <h4>{t("Sign in")}</h4>
                 <p className="text-muted mb-4">
