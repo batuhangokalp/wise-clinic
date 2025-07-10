@@ -394,7 +394,7 @@ class Chats extends Component {
                         </div>
                         {chat.unread_count > 0 && (
                           <div className="unread-message">
-                            <span className="badge badge-soft-success rounded-pill">
+                            <span className="badge badge-soft-success rounded-pill" style={{backgroundColor:'#FE521E', color:'#fff'}}>
                               {chat.unread_count}
                             </span>
                           </div>

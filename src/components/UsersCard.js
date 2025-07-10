@@ -44,6 +44,7 @@ function UsersCard(props) {
     position: Yup.string().nullable(),
     department: Yup.string().nullable(),
     is_active: Yup.string().nullable(),
+    default_assignee: Yup.boolean(),
   });
 
   const updateValidationSchema = Yup.object().shape({
@@ -59,6 +60,7 @@ function UsersCard(props) {
     position: Yup.string().nullable(),
     department: Yup.string().nullable(),
     is_active: Yup.string().nullable(),
+    default_assignee: Yup.boolean(),
   });
 
   useEffect(() => {
@@ -136,8 +138,6 @@ function UsersCard(props) {
         setTimeout(async () => {
           setUpdateUserModal(false);
           dispatch(fetchUsers());
-          dispatch(apiUserError(null));
-          dispatch(apiUserSuccess(null));
         }, 3000);
       }
     });
@@ -324,8 +324,6 @@ function UsersCard(props) {
         modal={updateUserModal}
         toggleModal={() => {
           setUpdateUserModal(!updateUserModal);
-          dispatch(apiUserError(null));
-          dispatch(apiUserSuccess(null));
         }}
         parentProps={{
           t: props.t,

@@ -209,7 +209,7 @@ const TemplatePicker = (props) => {
                           className="ri-whatsapp-fill text-success template-platform"
                           aria-hidden="true"
                         ></i>
-                        <b>{template?.vertical}</b>
+                        <b>{template?.element_name}</b>
                       </span>
                       <br />
                       <span className="template-text">

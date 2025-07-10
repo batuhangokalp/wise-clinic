@@ -50,7 +50,7 @@ export default function UpdateUserModal(props) {
     if (positions.length === 0) {
       dispatch(fetchPositions());
     }
-  }, [languages]);
+  }, [languages, roles.length, departments.length, positions.length, dispatch]);
 
   return (
     <Modal size="xl" isOpen={modal} centered toggle={toggleModal}>
@@ -65,6 +65,11 @@ export default function UpdateUserModal(props) {
             is_active:
               selectedUser?.is_active === "Y" ||
               selectedUser?.is_active === "Yes"
+                ? true
+                : false,
+            default_assignee:
+              selectedUser?.default_assignee === true ||
+              selectedUser?.default_assignee === "true"
                 ? true
                 : false,
           }}
@@ -319,6 +324,41 @@ export default function UpdateUserModal(props) {
                       </span>
                     )}
                   </div>
+                  {/* Default Assignee Field */}
+                  <div className="mb-4">
+                    <Label className="form-label" htmlFor="default_assignee">
+                      {parentProps?.t?.("Default Assignee")}
+                    </Label>
+                    <Field name="default_assignee">
+                      {({ field, form }) => (
+                        <div className="form-check form-switch">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            id="default_assignee"
+                            {...field}
+                            checked={field.value}
+                            onChange={(e) => {
+                              form.setFieldValue(field.name, e.target.checked);
+                            }}
+                          />
+                          <label
+                            className="form-check-label"
+                            htmlFor="default_assignee"
+                          >
+                            {field.value
+                              ? parentProps?.t?.("Yes")
+                              : parentProps?.t?.("No")}
+                          </label>
+                        </div>
+                      )}
+                    </Field>
+                    {errors.default_assignee && touched.default_assignee && (
+                      <span className="mt-2 text-danger">
+                        {errors.default_assignee}
+                      </span>
+                    )}
+                  </div>
 
                   {/* Sex Field */}
                   <div className="mb-4">
@@ -371,7 +411,7 @@ export default function UpdateUserModal(props) {
               </div>
 
               <ModalFooter style={{ display: "block" }}>
-                {parentProps?.success && (
+                {/* {parentProps?.success && (
                   <div
                     style={{
                       display: "block",
@@ -392,7 +432,7 @@ export default function UpdateUserModal(props) {
                   >
                     <Alert color="danger">{parentProps?.error}</Alert>
                   </div>
-                )}
+                )} */}
                 <div style={{ display: "flex", justifyContent: "end" }}>
                   <Button type="button" color="link" onClick={toggleModal}>
                     {parentProps?.t?.("Close")}

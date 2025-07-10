@@ -1,4 +1,4 @@
-const MessageStatus = ({ status }) => {
+const MessageStatus = ({ status, messageError }) => {
   const iconStyle = {
     width: "22px",
     height: "22px",

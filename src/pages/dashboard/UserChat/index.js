@@ -87,6 +87,8 @@ function UserChat(props) {
   const [customPrompt, setCustomPrompt] = useState("");
   const [anotherAiResponse, setAnotherAiResponse] = useState(null);
   const [chatLoading, setChatLoading] = useState(true);
+  const [messageError, setMessageError] = useState("");
+
   useEffect(() => {
     if (chatMessages && chatMessages.length > 0) {
       setChatLoading(false);
@@ -260,6 +262,8 @@ function UserChat(props) {
         dispatch(setChatMessages(updatedMessages));
 
         if (status === "failed") {
+          console.log("2oruıewrıew", error);
+          setMessageError(error);
           toast.error(error, {
             position: "bottom-right",
           });
@@ -332,7 +336,9 @@ function UserChat(props) {
         }
       );
       const data = await response.json();
+
       dispatch(fetchConversations());
+      markConversationAsRead();
 
       return data;
     } catch (error) {
@@ -1086,7 +1092,10 @@ function UserChat(props) {
                                       <span className="align-middle">
                                         {showChatMessageTime(chat?.created_at)}
 
-                                        <MessageStatus status={chat?.status} />
+                                        <MessageStatus
+                                          status={chat?.status}
+                                          messageError={messageError}
+                                        />
                                       </span>
                                     </p>
                                   ) : (

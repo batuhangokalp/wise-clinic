@@ -3,8 +3,8 @@ const MarkAsReadButton = ({ count = 0, onClick }) => {
     <button
       onClick={onClick}
       style={{
-        border: "1px solid #e66e4a",
-        color: "#e66e4a",
+        border: "1px solid #FE521E",
+        color: "#FE521E",
         backgroundColor: "#fff",
         padding: "6px 12px",
         borderRadius: "30px",
@@ -18,7 +18,7 @@ const MarkAsReadButton = ({ count = 0, onClick }) => {
       Mark as read
       <span
         style={{
-          backgroundColor: "#e66e4a",
+          backgroundColor: "#FE521E",
           color: "#fff",
           borderRadius: "50%",
           width: "20px",

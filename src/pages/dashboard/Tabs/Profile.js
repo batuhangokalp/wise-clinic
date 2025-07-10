@@ -169,8 +169,6 @@ function Profile() {
                   modal={updateUserModal}
                   toggleModal={() => {
                     setUpdateUserModal(!updateUserModal);
-                    dispatch(apiUserError(null));
-                    dispatch(apiUserSuccess(null));
                   }}
                   validationSchema={updateValidationSchema}
                   selectedUser={currentUser}

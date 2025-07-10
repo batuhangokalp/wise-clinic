@@ -102,12 +102,11 @@
             display: inline-block;  
             right: 24px/*rtl:auto*/;
             left: auto/*rtl:0*/;
-            top: 33px;
-
+            top: 35px;
             .badge {
                 line-height: 16px;
                 font-weight: $font-weight-semibold;
-                font-size: 10px;
+                font-size: 11px;
             }
         }
     }
