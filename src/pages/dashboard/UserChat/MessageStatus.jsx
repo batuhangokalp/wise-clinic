@@ -1,10 +1,12 @@
+import { UncontrolledTooltip } from "reactstrap";
+
 const MessageStatus = ({ status, messageError }) => {
   const iconStyle = {
     width: "22px",
     height: "22px",
     marginLeft: "6px",
     display: "inline-block",
-    verticalAlign: "middle"
+    verticalAlign: "middle",
   };
 
   const singleTick = (
@@ -51,16 +53,16 @@ const MessageStatus = ({ status, messageError }) => {
           <stop offset="100%" stopColor="#1976D2" />
         </linearGradient>
       </defs>
-      <path 
-        d="M3 16l3.5 3L12 9" 
-        stroke="url(#blueGradient)" 
+      <path
+        d="M3 16l3.5 3L12 9"
+        stroke="url(#blueGradient)"
         strokeWidth="2.2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path 
-        d="M11 16l3.5 3L21 7" 
-        stroke="url(#blueGradient)" 
+      <path
+        d="M11 16l3.5 3L21 7"
+        stroke="url(#blueGradient)"
         strokeWidth="2.2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -68,23 +70,32 @@ const MessageStatus = ({ status, messageError }) => {
     </svg>
   );
 
-  const failedIcon = (
-    <svg
-      style={iconStyle}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#D32F2F"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="8" x2="12" y2="12" />
-      <line x1="12" y1="16" x2="12" y2="16" />
-    </svg>
-  );
-
+  if (status === "failed") {
+    const tooltipId = `failed-icon-${Math.random().toString(36).substr(2, 9)}`;
+    return (
+      <>
+        <span id={tooltipId}>
+          <svg
+            style={iconStyle}
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#D32F2F"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12" y2="16" />
+          </svg>
+        </span>
+        <UncontrolledTooltip placement="top" target={tooltipId}>
+          {messageError || "Sending error"}
+        </UncontrolledTooltip>
+      </>
+    );
+  }
   switch (status) {
     case "sent":
       return singleTick;
@@ -92,8 +103,6 @@ const MessageStatus = ({ status, messageError }) => {
       return doubleTickGray;
     case "read":
       return doubleTickBlue;
-    case "failed":
-      return failedIcon;
     default:
       return null;
   }

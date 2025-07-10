@@ -18,6 +18,8 @@ SendTemplateMessageModal.propTypes = {
 };
 
 export default function SendTemplateMessageModal(props) {
+  const [uploadedFile, setUploadedFile] = useState(null);
+
   const { t } = useTranslation();
   const { show, handleClose, template } = props;
   const dispatch = useDispatch();
@@ -45,7 +47,8 @@ export default function SendTemplateMessageModal(props) {
       );
       const result = await response.json();
       if (response.ok) {
-        setUploadedUrl(result.url); 
+        setUploadedUrl(result.url);
+        setUploadedFile(file);
       } else {
         console.error("Yükleme başarısız:", result);
       }
@@ -78,6 +81,7 @@ export default function SendTemplateMessageModal(props) {
         id: template?.gupshup_id,
         params: orderedParams,
       },
+      filename: uploadedFile?.name || "file",
     };
 
     let request = baseRequest;
@@ -93,9 +97,9 @@ export default function SendTemplateMessageModal(props) {
       request = {
         ...baseRequest,
         url: uploadedUrl,
+        filename: uploadedFile?.name || "file",
       };
     }
-
 
     await dispatch(sendMessage(request));
     setUploadedUrl("");

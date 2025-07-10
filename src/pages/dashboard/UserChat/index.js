@@ -87,7 +87,6 @@ function UserChat(props) {
   const [customPrompt, setCustomPrompt] = useState("");
   const [anotherAiResponse, setAnotherAiResponse] = useState(null);
   const [chatLoading, setChatLoading] = useState(true);
-  const [messageError, setMessageError] = useState("");
 
   useEffect(() => {
     if (chatMessages && chatMessages.length > 0) {
@@ -251,19 +250,24 @@ function UserChat(props) {
     const handleMessageStatus = (data) => {
       if (data.eventType === "message-status") {
         const { messageId, status, error } = data;
-        // console.log("Gupshup ID:", messageId, "Status:", status);
 
         if (!Array.isArray(chatMessages)) return;
 
         const updatedMessages = chatMessages.map((msg) =>
-          msg.gupshup_message_id === messageId ? { ...msg, status } : msg
+          msg.gupshup_message_id === messageId
+            ? {
+                ...msg,
+                status,
+                ...(status === "failed" && error
+                  ? { error_reason: error }
+                  : {}),
+              }
+            : msg
         );
 
         dispatch(setChatMessages(updatedMessages));
 
-        if (status === "failed") {
-          console.log("2oruıewrıew", error);
-          setMessageError(error);
+        if (status === "failed" && error) {
           toast.error(error, {
             position: "bottom-right",
           });
@@ -281,68 +285,112 @@ function UserChat(props) {
   const toggle = () => setModal(!modal);
   const user = useSelector((state) => state.User.user);
 
-  const sendMessage = async (message, type) => {
+  // const sendMessage = async (message, type) => {
+  //   try {
+  //     let bodyData;
+
+  //     if (
+  //       type === "audioMessage" ||
+  //       type === "fileMessage" ||
+  //       type === "imageMessage"
+  //     ) {
+  //       // Eğer dosya gönderiyorsan form-data kullan
+  //       const formData = new FormData();
+  //       formData.append("phone_number", props.activeConversation?.phone_number);
+  //       formData.append(
+  //         "message_type_name",
+  //         type === "audioMessage"
+  //           ? "audio"
+  //           : type === "fileMessage"
+  //           ? "document"
+  //           : "image"
+  //       );
+  //       formData.append("message_category", "session");
+  //       formData.append("sender_source", "908503770269");
+  //       formData.append(
+  //         "receiver_destination",
+  //         props.activeConversation?.phone_number
+  //       );
+  //       formData.append("assigned_user_id", user?.id);
+  //       formData.append("file", message);
+
+  //       bodyData = formData;
+  //     } else {
+  //       // Text mesaj için JSON gönder
+  //       bodyData = JSON.stringify({
+  //         phone_number: props.activeConversation?.phone_number,
+  //         message_content: message,
+  //         message_type_name: "text",
+  //         message_category: "session",
+  //         sender_source: "908503770269",
+  //         receiver_destination: props.activeConversation?.phone_number,
+  //         assigned_user_id: user?.id,
+  //       });
+  //     }
+
+  //     const response = await fetch(
+  //       `${process.env.REACT_APP_API_URL}/api/messages/send`,
+  //       {
+  //         method: "POST",
+  //         headers:
+  //           type === "textMessage"
+  //             ? { "Content-Type": "application/json" }
+  //             : {}, // form-data için content-type otomatik atanır
+  //         body: bodyData,
+  //       }
+  //     );
+  //     console.log("resssssssss",response)
+  //     const data = await response.json();
+  //     console.log("dataaaaaaaaaaaaaa", data)
+
+  //     dispatch(fetchConversations());
+  //     markConversationAsRead();
+
+  //     return data;
+  //   } catch (error) {
+  //     console.log("dlsjfkdjskfhdjshfdsfdsfsd", error)
+  //     console.error("Error:", error);
+  //   }
+  // };
+
+  const sendMessage = async (message) => {
     try {
-      let bodyData;
-
-      if (
-        type === "audioMessage" ||
-        type === "fileMessage" ||
-        type === "imageMessage"
-      ) {
-        // Eğer dosya gönderiyorsan form-data kullan
-        const formData = new FormData();
-        formData.append("phone_number", props.activeConversation?.phone_number);
-        formData.append(
-          "message_type_name",
-          type === "audioMessage"
-            ? "audio"
-            : type === "fileMessage"
-            ? "document"
-            : "image"
-        );
-        formData.append("message_category", "session");
-        formData.append("sender_source", "908503770269");
-        formData.append(
-          "receiver_destination",
-          props.activeConversation?.phone_number
-        );
-        formData.append("assigned_user_id", user?.id);
-        formData.append("file", message); // message burada File veya Blob nesnesi
-
-        bodyData = formData;
-      } else {
-        // Text mesaj için JSON gönder
-        bodyData = JSON.stringify({
-          phone_number: props.activeConversation?.phone_number,
-          message_content: message,
-          message_type_name: "text",
-          message_category: "session",
-          sender_source: "908503770269",
-          receiver_destination: props.activeConversation?.phone_number,
-          assigned_user_id: user?.id,
-        });
-      }
+      const bodyData = JSON.stringify({
+        phone_number: props.activeConversation?.phone_number,
+        message_content: message,
+        message_type_name: "text",
+        message_category: "session",
+        sender_source: "908503770269",
+        receiver_destination: props.activeConversation?.phone_number,
+        assigned_user_id: user?.id,
+      });
 
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/api/messages/send`,
         {
           method: "POST",
-          headers:
-            type === "textMessage"
-              ? { "Content-Type": "application/json" }
-              : {}, // form-data için content-type otomatik atanır
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: bodyData,
         }
       );
+
       const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Mesaj gönderilemedi:", data);
+        toast.error(data?.message || "Unsuccesful");
+        return;
+      }
 
       dispatch(fetchConversations());
       markConversationAsRead();
 
       return data;
     } catch (error) {
-      console.error("Error:", error);
+      console.error("SendMessage error:", error);
+      toast.error("Mesaj gönderilirken bir hata oluştu.");
     }
   };
 
@@ -1063,6 +1111,8 @@ function UserChat(props) {
                                     />
                                   )}
 
+                                  {console.log("chat", chat)}
+
                                   {/* Text mesaj (https ile başlamıyorsa) */}
                                   {!chat?.message_content?.startsWith(
                                     "https"
@@ -1094,7 +1144,7 @@ function UserChat(props) {
 
                                         <MessageStatus
                                           status={chat?.status}
-                                          messageError={messageError}
+                                          messageError={chat?.error_reason}
                                         />
                                       </span>
                                     </p>
