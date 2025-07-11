@@ -89,7 +89,7 @@ function UserChat(props) {
   const [chatLoading, setChatLoading] = useState(true);
 
   useEffect(() => {
-    if (chatMessages && chatMessages.length > 0) {
+    if (Array.isArray(chatMessages)) {
       setChatLoading(false);
     }
   }, [chatMessages]);
