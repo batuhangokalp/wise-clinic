@@ -1094,7 +1094,6 @@ function UserChat(props) {
                                       senderType={chat?.sender_type}
                                     />
                                   )}
-                                                    {console.log("chhhattttt", chat)}
 
                                   {/* Text dosyası, Word dosyası veya txt dosyası */}
                                   {(FileTypeId.TextFile ===
