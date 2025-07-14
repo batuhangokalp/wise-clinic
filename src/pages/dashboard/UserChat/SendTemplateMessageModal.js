@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { memo, useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import TemplateEditor from "./TemplateEditor";
@@ -17,7 +17,7 @@ SendTemplateMessageModal.propTypes = {
   template: PropTypes.object,
 };
 
-export default function SendTemplateMessageModal(props) {
+function SendTemplateMessageModal(props) {
   const [uploadedFile, setUploadedFile] = useState(null);
 
   const { t } = useTranslation();
@@ -102,6 +102,7 @@ export default function SendTemplateMessageModal(props) {
     }
 
     await dispatch(sendMessage(request));
+    await props.markConversationAsRead();
     setUploadedUrl("");
     await dispatch(fetchConversationById(activeConversation?.id));
     await dispatch(fetchMessagesByConversationId(activeConversation));
@@ -173,18 +174,12 @@ export default function SendTemplateMessageModal(props) {
               </div>
             )}
 
-            {/* Açıklama yazısı varsa */}
             {template?.content && (
-              <div
-                className="mt-3 p-3"
-                style={{
-                  backgroundColor: "#f8f9fa",
-                  borderRadius: "8px",
-                  border: "1px solid #dee2e6",
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {template.content}
+              <div className="mt-3">
+                <TemplateEditor
+                  template={template}
+                  onParamsChange={setTemplateParams}
+                />
               </div>
             )}
           </>
@@ -208,3 +203,5 @@ export default function SendTemplateMessageModal(props) {
     </Modal>
   );
 }
+
+export default memo(SendTemplateMessageModal);

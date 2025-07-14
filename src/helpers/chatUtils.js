@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useDispatch, } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setActiveTab } from "../redux/actions";
 
 export const useChatUrlParams = (
@@ -63,7 +63,7 @@ export const useChatUrlParams = (
         setActiveConversationId(chat?.id);
         updateChatUI(index);
       } else {
-        conversations?.length > 0 && updateChatUrl(conversations[0]?.id);
+        setActiveConversationId(null)
       }
     }
   }, [
@@ -72,7 +72,6 @@ export const useChatUrlParams = (
     setActiveConversation,
     setActiveConversationId,
     updateChatUI,
-    updateChatUrl,
   ]);
 
   // Initial setup effect

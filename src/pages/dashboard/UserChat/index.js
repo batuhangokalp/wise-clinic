@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   DropdownMenu,
   DropdownItem,
@@ -284,6 +284,43 @@ function UserChat(props) {
 
   const toggle = () => setModal(!modal);
   const user = useSelector((state) => state.User.user);
+
+  const markConversationAsRead = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/messages/conversation/${props.activeConversation.id}/mark-as-read`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! status: ${response.status}, body: ${errorText}`
+        );
+      }
+
+      const data = await response.json();
+
+      const updatedConversation = {
+        ...props.activeConversation,
+        unread_count: 0,
+      };
+
+      dispatch(setActiveConversation(updatedConversation));
+      dispatch(markConversationAsReadInList(props.activeConversation.id));
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }, [props.activeConversation, dispatch]);
 
   // const sendMessage = async (message, type) => {
   //   try {
@@ -668,43 +705,6 @@ function UserChat(props) {
       setCustomPrompt("");
     }
   };
-  const markConversationAsRead = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/messages/conversation/${props.activeConversation?.id}/mark-as-read`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `HTTP error! status: ${response.status}, body: ${errorText}`
-        );
-      }
-
-      const data = await response.json();
-
-      const updatedConversation = {
-        ...props.activeConversation,
-        unread_count: 0,
-      };
-
-      dispatch(setActiveConversation(updatedConversation));
-
-      dispatch(markConversationAsReadInList(props.activeConversation.id));
-
-      return data;
-    } catch (error) {
-      throw error;
-    }
-  };
 
   return (
     <div className="user-chat w-100 overflow-hidden">
@@ -788,7 +788,7 @@ function UserChat(props) {
             </div>
           </div>
         </div>
-      ) : (
+      ) : props.activeConversationId ? (
         <div className="d-lg-flex">
           <div
             className={
@@ -1094,6 +1094,8 @@ function UserChat(props) {
                                       senderType={chat?.sender_type}
                                     />
                                   )}
+                                                    {console.log("chhhattttt", chat)}
+
                                   {/* Text dosyası, Word dosyası veya txt dosyası */}
                                   {(FileTypeId.TextFile ===
                                     Number(chat?.file_type_id) ||
@@ -1110,8 +1112,6 @@ function UserChat(props) {
                                       senderType={chat?.sender_type}
                                     />
                                   )}
-
-                                  {console.log("chat", chat)}
 
                                   {/* Text mesaj (https ile başlamıyorsa) */}
                                   {!chat?.message_content?.startsWith(
@@ -1233,7 +1233,10 @@ function UserChat(props) {
               </ModalBody>
             </Modal>
 
-            <SendFileModal show={false} />
+            <SendFileModal
+              show={false}
+              markConversationAsRead={markConversationAsRead}
+            />
 
             <ChatInput
               onaddMessage={addMessage}
@@ -1243,6 +1246,7 @@ function UserChat(props) {
               anotherAiResponse={anotherAiResponse}
               handleAiClick={handleAiClick}
               chatMessages={chatMessages}
+              markConversationAsRead={markConversationAsRead}
             />
           </div>
 
@@ -1267,6 +1271,10 @@ function UserChat(props) {
             setCustomPrompt={setCustomPrompt}
             sendCustomPrompt={sendCustomPrompt}
           />
+        </div>
+      ) : (
+        <div className="w-100 h-100 d-flex align-items-center justify-content-center">
+          <p className="text-muted fs-5"> No chat has been selected yet</p>
         </div>
       )}
     </div>

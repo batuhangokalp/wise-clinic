@@ -39,7 +39,7 @@ import avatar7 from "../../assets/images/users/avatar-7.jpg";
 import avatar8 from "../../assets/images/users/avatar-8.jpg";
 
 const INIT_STATE = {
-  activeConversationId: 1,
+  activeConversationId: null,
   activeConversation: {},
   conversations: [],
   chatMessages: [],

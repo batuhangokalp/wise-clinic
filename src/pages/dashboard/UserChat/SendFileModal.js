@@ -1,4 +1,4 @@
-import React, { act, useEffect, useState } from "react";
+import React, { act, memo, useEffect, useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import PropTypes from "prop-types";
@@ -23,7 +23,7 @@ import RenderFilePreview from "./RenderFilePreview";
 import { Input } from "reactstrap";
 import RenderDocPreview from "./RenderDoc";
 
-export default function SendFileModal() {
+function SendFileModal({ markConversationAsRead }) {
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   /* intilize t variable for multi language implementation */
@@ -81,6 +81,7 @@ export default function SendFileModal() {
       await dispatch(sendMessage(request));
       await dispatch(fetchConversationById(activeConversation?.id));
       await dispatch(fetchMessagesByConversationId(activeConversation));
+      await markConversationAsRead();
       handleClose();
     } catch (err) {
       console.error("Gönderme hatası:", err);
@@ -100,10 +101,9 @@ export default function SendFileModal() {
       setShow(true);
       //console.log(chatFile)
       //console.log("url: ", URL.createObjectURL(chatFile))
-      FileTypeId.Image?.includes(findFileType(chatFile?.type)) 
+      FileTypeId.Image?.includes(findFileType(chatFile?.type));
     }
   }, [chatFile]);
-
 
   return (
     <Modal
@@ -120,12 +120,12 @@ export default function SendFileModal() {
           <p>{chatFile?.name}</p>
         </div>
       </Modal.Header>
-      
+
       <Modal.Body style={{ alignSelf: "center" }}>
         <RenderImage chatFile={chatFile} />
         <RenderPDFFirstPage chatFile={chatFile} />
         <RenderFilePreview chatFile={chatFile} />
-        <RenderDocPreview chatFile={chatFile} /> 
+        <RenderDocPreview chatFile={chatFile} />
         <RenderAudio chatFile={chatFile} />
         <RenderVideo chatFile={chatFile} />
         {/* Yazı alanı (dosya açıklaması / caption) */}
@@ -165,3 +165,4 @@ export default function SendFileModal() {
     </Modal>
   );
 }
+export default memo(SendFileModal);

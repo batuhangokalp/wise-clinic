@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import {
   Button,
   Input,
@@ -145,6 +145,7 @@ function ChatInput(props) {
         handleClose={(e) => {
           setShowSendTemplateMessageModal(false);
         }}
+        markConversationAsRead={props.markConversationAsRead}
       />
       <Form onSubmit={async (e) => await onaddMessage(e, textMessage)}>
         <Row className="g-0 mt-2 align-items-center">
@@ -381,17 +382,17 @@ function ChatInput(props) {
                     Images
                   </UncontrolledTooltip>
                 </li>
-                <li className="list-inline-item">
-                  <Button
-                    type="submit"
-                    color="primary"
-                    className="font-size-16 btn-lg chat-send waves-effect waves-light"
-                  >
-                    <i className="ri-send-plane-2-fill"></i>
-                  </Button>
-                </li>
               </ul>
             </div>
+          </Col>
+          <Col xs="auto">
+            <Button
+              type="submit"
+              color="primary"
+              className="font-size-16 btn-lg chat-send waves-effect waves-light"
+            >
+              <i className="ri-send-plane-2-fill"></i>
+            </Button>
           </Col>
         </Row>
       </Form>
@@ -399,4 +400,4 @@ function ChatInput(props) {
   );
 }
 
-export default ChatInput;
+export default memo(ChatInput);

@@ -33,7 +33,7 @@ function VoiceRecorder({ onAudioCapture }) {
     mediaRecorderRef.current.onstop = () => {
       const mimeType = options.mimeType || "audio/webm";
       const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-      console.log("object", audioBlob)
+      // console.log("object", audioBlob)
       setAudioBlob(audioBlob);
       const audioURL = URL.createObjectURL(audioBlob);
       onAudioCapture(audioBlob, audioURL);
