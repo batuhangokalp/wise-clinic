@@ -24,6 +24,9 @@ function UserHead(props) {
   const [dropdownOpen1, setDropdownOpen1] = useState(false);
   const [Callmodal, setCallModal] = useState(false);
   const [Videomodal, setVideoModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const chatMessages = props.chatMessages;
 
   const toggle = () => setDropdownOpen(!dropdownOpen);
   const toggle1 = () => setDropdownOpen1(!dropdownOpen1);
@@ -48,6 +51,12 @@ function UserHead(props) {
     let copyallUsers = allUsers;
     copyallUsers[0].messages = [];
   }
+  const handleSearch = () => {
+    const results = chatMessages?.filter((msg) =>
+      msg.message_content?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setSearchResults(results);
+  };
 
   return (
     <React.Fragment>
@@ -135,11 +144,61 @@ function UserHead(props) {
                   </DropdownToggle>
                   <DropdownMenu className="p-0 dropdown-menu-end dropdown-menu-md">
                     <div className="search-box p-2">
-                      <Input
-                        type="text"
-                        className="form-control bg-light border-0"
-                        placeholder="Search.."
-                      />
+                      <div className="d-flex gap-2 mb-2">
+                        <Input
+                          type="text"
+                          className="form-control bg-light border-0"
+                          placeholder="Search.."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <Button color="primary" onClick={handleSearch}>
+                          Search
+                        </Button>
+                      </div>
+
+                      {/* Arama sonuçlarını göster */}
+                      {searchResults.length > 0 ? (
+                        <div
+                          className="search-results"
+                          style={{ maxHeight: "250px", overflowY: "auto" }} // scroll ekledim
+                        >
+                          {searchResults.map((msg, index) => (
+                            <div
+                              key={index}
+                              onClick={() => {
+                                const el = document.getElementById(
+                                  `message-${msg.id}`
+                                );
+                                if (el) {
+                                  el.scrollIntoView({
+                                    behavior: "smooth",
+                                    block: "center",
+                                  });
+
+                                  el.style.transition = "background-color 0.3s";
+                                  el.style.backgroundColor = "#fff9c4";
+                                  setTimeout(() => {
+                                    el.style.backgroundColor = "";
+                                  }, 2000);
+                                }
+                              }}
+                              style={{
+                                padding: "6px",
+                                borderBottom: "1px solid #eee",
+                                fontSize: "14px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              {msg.message_content.length > 50
+                                ? msg.message_content.substring(0, 50) + "..."
+                                : msg.message_content}
+                            </div>
+                          ))}
+                        </div>
+                      ) : searchTerm ? (
+                        <div className="text-muted px-2">No results found</div>
+                      ) : null}
                     </div>
                   </DropdownMenu>
                 </Dropdown>

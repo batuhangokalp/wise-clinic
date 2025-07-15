@@ -798,7 +798,10 @@ function UserChat(props) {
             }
           >
             {/* render user head */}
-            <UserHead activeConversation={props.activeConversation} />
+            <UserHead
+              activeConversation={props.activeConversation}
+              chatMessages={chatMessages}
+            />
 
             <SimpleBar
               onScroll={() => {
@@ -910,7 +913,6 @@ function UserChat(props) {
                                 )}
                                 {!chat?.isTyping && (
                                   <p className="chat-time mb-0">
-                                    <i className="ri-time-line align-middle"></i>{" "}
                                     <span className="align-middle">
                                       {chat?.time}
                                     </span>
@@ -1113,9 +1115,78 @@ function UserChat(props) {
                                   )}
 
                                   {/* Text mesaj (https ile başlamıyorsa) */}
-                                  {!chat?.message_content?.startsWith(
-                                    "https"
-                                  ) && <div>{chat.message_content}</div>}
+                                  <div id={`message-${chat.id}`}>
+                                    {!chat?.message_content?.startsWith(
+                                      "https"
+                                    ) && (
+                                      <>
+                                        {/* Header varsa göster */}
+                                        {chat.header &&
+                                          chat.header.trim() !== "" && (
+                                            <div
+                                              style={{
+                                                fontWeight: "bold",
+                                                marginBottom: "4px",
+                                              }}
+                                            >
+                                              {chat.header}
+                                            </div>
+                                          )}
+
+                                        {/* Mesaj içeriğini göster */}
+                                        <div style={{marginBottom: '8px'}}>{chat.message_content}</div>
+
+                                        {/* Footer varsa göster */}
+                                        {chat.footer &&
+                                          chat.footer.trim() !== "" && (
+                                            <div
+                                              style={{
+                                                fontSize: "15px",
+                                                color: "#999",
+                                                marginTop: "4px",
+                                              }}
+                                            >
+                                              {chat.footer}
+                                            </div>
+                                          )}
+
+                                        {/* Butonlar varsa göster */}
+                                        {chat.buttons?.length > 0 && (
+                                          <div
+                                            style={{
+                                              marginTop: "8px",
+                                              display: "flex",
+                                              gap: "8px",
+                                              flexWrap: "wrap",
+                                            }}
+                                          >
+                                            {chat.buttons.map(
+                                              (button, index) => (
+                                                <button
+                                                  key={index}
+                                                  onClick={() =>
+                                                    console.log(
+                                                      "Button clicked:",
+                                                      button
+                                                    )
+                                                  }
+                                                  style={{
+                                                    padding: "6px 12px",
+                                                    backgroundColor: "#e0f0ff",
+                                                    border: "1px solid #ccc",
+                                                    borderRadius: "6px",
+                                                    cursor: "pointer",
+                                                  }}
+                                                >
+                                                  {button.text}
+                                                </button>
+                                              )
+                                            )}
+                                          </div>
+                                        )}
+                                      </>
+                                    )}
+                                  </div>
                                 </div>
 
                                 {chat?.isTyping && (
@@ -1137,7 +1208,6 @@ function UserChat(props) {
                                       className="chat-time mb-0"
                                       style={{ zIndex: 1 }}
                                     >
-                                      <i className="ri-time-line align-middle"></i>{" "}
                                       <span className="align-middle">
                                         {showChatMessageTime(chat?.created_at)}
 
@@ -1155,7 +1225,6 @@ function UserChat(props) {
                                         right: "25px",
                                       }}
                                     >
-                                      <i className="ri-time-line align-middle"></i>{" "}
                                       <span className="align-middle">
                                         {showChatMessageTime(chat?.created_at)}
                                       </span>
