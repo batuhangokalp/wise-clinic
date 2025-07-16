@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   DropdownMenu,
   DropdownItem,
@@ -20,8 +26,11 @@ import UserProfileSidebar from "../../../components/UserProfileSidebar";
 import SelectContact from "../../../components/SelectContact";
 import UserHead from "./UserHead";
 import ChatInput from "./ChatInput";
-import { showChatMessageTime } from "../../../helpers/chatUtils";
-import { FileTypeId, findFileType } from "../../../helpers/chatConstants";
+import {
+  getFullDateInfo,
+  showChatMessageTime,
+} from "../../../helpers/chatUtils";
+import { FileTypeId } from "../../../helpers/chatConstants";
 import SendFileModal from "./SendFileModal";
 import { downloadFile } from "../../../helpers/fileUtils";
 import {
@@ -38,7 +47,6 @@ import {
   hasPermission,
   openUserSidebar,
   setChatMessages,
-  setConversations,
 } from "../../../redux/actions";
 
 //Import Images
@@ -73,7 +81,6 @@ function UserChat(props) {
 
   /* intilize t variable for multi language implementation */
   const { t } = useTranslation();
-  //demo conversation messages
   //sender_type must be required
   const chatMessages = useSelector((state) => state.Chat?.chatMessages);
   const [socket, setSocket] = useState(null);
@@ -87,6 +94,7 @@ function UserChat(props) {
   const [customPrompt, setCustomPrompt] = useState("");
   const [anotherAiResponse, setAnotherAiResponse] = useState(null);
   const [chatLoading, setChatLoading] = useState(true);
+  const [selectedMessage, setSelectedMessage] = useState(null);
 
   useEffect(() => {
     if (Array.isArray(chatMessages)) {
@@ -141,108 +149,6 @@ function UserChat(props) {
       //console.log("Disconnected from the server");
     };
   }, [SOCKET_SERVER_URL]);
-
-  // const playNotificationSound = () => {
-  //   const audio = new Audio("/notifications.wav");
-  //   audio.play().catch((err) => {
-  //     console.warn("Ses çalınamadı:", err);
-  //   });
-  // };
-
-  // const showDesktopNotification = (title, message) => {
-  //   if (Notification.permission === "granted") {
-  //     try {
-  //       new Notification(title, {
-  //         body: message,
-  //         icon: "/upsense-logo.png",
-  //       });
-  //     } catch (error) {
-  //       //console.error("Bildirim gönderilemedi:", error);
-  //     }
-  //   } else {
-  //     //console.log("Bildirim izni yok.");
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   if (socket) {
-  //     const handleConnect = () => console.log("Connected to server");
-
-  //     const handleMessage = (message) => {
-  //       const contact = contacts.find((c) => c.id === message.senderId);
-  //       const senderName = contact?.name || "";
-  //       const senderSurname = contact?.surname || "";
-  //       playNotificationSound();
-  //       showDesktopNotification(
-  //         `${senderName} ${senderSurname} sent message!`,
-  //         message.message
-  //       );
-  //       if (chatMessages?.length > 0) {
-  //         let data = {
-  //           id: chatMessages[chatMessages.length - 1]?.id + 1,
-  //           message_content: message?.message,
-  //           created_at: message?.timestamp,
-  //           sender_type: "receiver",
-  //           conversationId: message?.conversationId,
-  //           mediaType: message?.mediaType,
-  //           mediaUrl: message?.mediaUrl,
-  //           message: message?.message,
-  //           senderId: message?.senderId,
-  //           timestamp: message?.timestamp,
-  //           file_type_id: findFileType(message?.mediaType),
-  //           file_path: message?.mediaUrl,
-  //         };
-
-  //         dispatch(setChatMessages([...chatMessages, data]));
-
-  //         scrollToBottom();
-  //       }
-  //     };
-
-  //     const handleNewMessage = (message) => {
-  //       let messageSender = message?.senderId;
-  //       let conversation = props.conversations.find(
-  //         (conversation) => conversation?.phone_number === messageSender
-  //       );
-  //       if (conversation) {
-  //         conversation.last_message = message?.message ?? t("Media Message");
-  //         conversation.unRead =
-  //           conversation.unRead && conversation.unRead >= 0
-  //             ? conversation.unRead + 1
-  //             : 1;
-  //         conversation.updated_at = new Date();
-
-  //         let currentConversations = props.conversations.filter(
-  //           (conversation) => conversation?.phone_number !== messageSender
-  //         );
-  //         currentConversations.unshift(conversation);
-  //         dispatch(setConversations(currentConversations));
-  //       }
-  //     };
-  //     // Reset chatMessages when conversation changes
-  //     socket.on("connect", handleConnect);
-  //     socket.on("new_message", handleNewMessage);
-
-  //     // Dynamically handle conversation updates based on activeConversationId
-  //     socket.on(`conversation_${props.activeConversationId}`, handleMessage);
-
-  //     socket.on(`conversation_update`, handleMessage);
-
-  //     return () => {
-  //       socket.off("connect", handleConnect);
-  //       socket.off(`conversation_${props.activeConversationId}`, handleMessage);
-  //       socket.off("new_message", handleNewMessage);
-  //       socket.off("conversation_update", handleMessage);
-  //     };
-  //   }
-  // }, [
-  //   socket,
-  //   props.activeConversationId,
-  //   props.conversations,
-  //   chatMessages,
-  //   dispatch,
-  //   t,
-  // ]);
 
   useEffect(() => {
     if (!socket) return;
@@ -322,73 +228,9 @@ function UserChat(props) {
     }
   }, [props.activeConversation, dispatch]);
 
-  // const sendMessage = async (message, type) => {
-  //   try {
-  //     let bodyData;
-
-  //     if (
-  //       type === "audioMessage" ||
-  //       type === "fileMessage" ||
-  //       type === "imageMessage"
-  //     ) {
-  //       // Eğer dosya gönderiyorsan form-data kullan
-  //       const formData = new FormData();
-  //       formData.append("phone_number", props.activeConversation?.phone_number);
-  //       formData.append(
-  //         "message_type_name",
-  //         type === "audioMessage"
-  //           ? "audio"
-  //           : type === "fileMessage"
-  //           ? "document"
-  //           : "image"
-  //       );
-  //       formData.append("message_category", "session");
-  //       formData.append("sender_source", "908503770269");
-  //       formData.append(
-  //         "receiver_destination",
-  //         props.activeConversation?.phone_number
-  //       );
-  //       formData.append("assigned_user_id", user?.id);
-  //       formData.append("file", message);
-
-  //       bodyData = formData;
-  //     } else {
-  //       // Text mesaj için JSON gönder
-  //       bodyData = JSON.stringify({
-  //         phone_number: props.activeConversation?.phone_number,
-  //         message_content: message,
-  //         message_type_name: "text",
-  //         message_category: "session",
-  //         sender_source: "908503770269",
-  //         receiver_destination: props.activeConversation?.phone_number,
-  //         assigned_user_id: user?.id,
-  //       });
-  //     }
-
-  //     const response = await fetch(
-  //       `${process.env.REACT_APP_API_URL}/api/messages/send`,
-  //       {
-  //         method: "POST",
-  //         headers:
-  //           type === "textMessage"
-  //             ? { "Content-Type": "application/json" }
-  //             : {}, // form-data için content-type otomatik atanır
-  //         body: bodyData,
-  //       }
-  //     );
-  //     console.log("resssssssss",response)
-  //     const data = await response.json();
-  //     console.log("dataaaaaaaaaaaaaa", data)
-
-  //     dispatch(fetchConversations());
-  //     markConversationAsRead();
-
-  //     return data;
-  //   } catch (error) {
-  //     console.log("dlsjfkdjskfhdjshfdsfdsfsd", error)
-  //     console.error("Error:", error);
-  //   }
-  // };
+  const handleMessageInfo = (message) => {
+    setSelectedMessage(message);
+  };
 
   const sendMessage = async (message) => {
     try {
@@ -414,6 +256,7 @@ function UserChat(props) {
       );
 
       const data = await response.json();
+      console.log("response", response);
 
       if (!response.ok) {
         console.error("Mesaj gönderilemedi:", data);
@@ -965,6 +808,7 @@ function UserChat(props) {
                         key={key}
                         className={chat?.sender_type === "user" ? "right" : ""}
                       >
+                        {/* !!!NORMAL CHATLER BURADA!!! */}
                         <div className="conversation-list">
                           {
                             //logic for display user name and profile only once, if current and last messaged sent by same receiver
@@ -1134,7 +978,9 @@ function UserChat(props) {
                                           )}
 
                                         {/* Mesaj içeriğini göster */}
-                                        <div style={{marginBottom: '8px'}}>{chat.message_content}</div>
+                                        <div style={{ marginBottom: "8px" }}>
+                                          {chat.message_content}
+                                        </div>
 
                                         {/* Footer varsa göster */}
                                         {chat.footer &&
@@ -1241,14 +1087,23 @@ function UserChat(props) {
                                     <i className="ri-more-2-fill"></i>
                                   </DropdownToggle>
                                   <DropdownMenu>
+                                    <DropdownItem
+                                      onClick={() => handleMessageInfo(chat)}
+                                      className="d-flex justify-content-between align-items-center"
+                                    >
+                                      {t("Message Info")}
+                                      <i className="ri-information-line text-muted"></i>
+                                    </DropdownItem>
+
                                     {chat?.file_type_id && (
                                       <DropdownItem
                                         onClick={() =>
                                           downloadFile(chat?.file_path)
                                         }
+                                        className="d-flex justify-content-between align-items-center"
                                       >
                                         {t("Download")}
-                                        <i className="ri-file-download-line float-end text-muted"></i>
+                                        <i className="ri-file-download-line text-muted"></i>
                                       </DropdownItem>
                                     )}
                                   </DropdownMenu>
@@ -1298,6 +1153,35 @@ function UserChat(props) {
                     <Button color="primary">Forward</Button>
                   </ModalFooter>
                 </CardBody>
+              </ModalBody>
+            </Modal>
+            <Modal
+              isOpen={!!selectedMessage}
+              toggle={() => setSelectedMessage(null)}
+            >
+              <ModalHeader toggle={() => setSelectedMessage(null)}>
+                Message Info
+              </ModalHeader>
+              <ModalBody>
+                <p>
+                  <strong>Message:</strong>{" "}
+                  {selectedMessage?.message_content?.length > 100
+                    ? selectedMessage.message_content.substring(0, 100) + "..."
+                    : selectedMessage?.message_content}
+                </p>
+
+                <p>
+                  <strong>Date:</strong>{" "}
+                  {getFullDateInfo(selectedMessage?.created_at)}
+                </p>
+                <p>
+                  <strong>Status:</strong> {selectedMessage?.status}
+                </p>
+                {selectedMessage?.error_reason && (
+                  <p>
+                    <strong>Error:</strong> {selectedMessage?.error_reason}
+                  </p>
+                )}
               </ModalBody>
             </Modal>
 
