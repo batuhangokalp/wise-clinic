@@ -14,6 +14,7 @@ import * as Yup from "yup";
 import Swal from "sweetalert2";
 import CreateCannedResponseModal from "./CreateCannedResponseModal";
 import UpdateCannedResponseModal from "./UpdateCannedResponseModal";
+import { toast } from "react-toastify";
 
 const columns = [
   {
@@ -158,6 +159,7 @@ export default function CannedResponseCard(props) {
         try {
           const response = await dispatch(deleteCannedResponse(id));
           if (response) {
+            toast.success("Canned Response deleted successfully!");
             dispatch(fetchCannedResponses());
             dispatch(apiTemplateError(null));
             dispatch(apiTemplateSuccess(null));

@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import {
   fetchConversationById,
+  fetchConversations,
   fetchMessagesByConversationId,
   sendMessage,
   setChatFile,
@@ -81,6 +82,7 @@ function SendFileModal({ markConversationAsRead }) {
       await dispatch(sendMessage(request));
       await dispatch(fetchConversationById(activeConversation?.id));
       await dispatch(fetchMessagesByConversationId(activeConversation));
+      dispatch(fetchConversations());
       await markConversationAsRead();
       handleClose();
     } catch (err) {

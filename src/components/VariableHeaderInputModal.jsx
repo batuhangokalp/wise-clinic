@@ -57,10 +57,10 @@ const VariableHeaderInputModal = ({
       </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={handleAddVariableHeader}>
-          Ekle
+          Add
         </Button>
         <Button color="secondary" onClick={() => setOpenHeaderModal(false)}>
-          İptal
+          Cancel
         </Button>
       </ModalFooter>
     </Modal>

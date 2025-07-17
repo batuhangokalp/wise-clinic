@@ -242,10 +242,6 @@ const TemplatePicker = (props) => {
                   <div style={{ display: "block" }}>
                     <div className="template-list">
                       <span className="template-title">
-                        <i
-                          className="ri-whatsapp-fill text-success template-platform"
-                          aria-hidden="true"
-                        ></i>
                         <b>{cannedResponse?.name}</b>
                       </span>
                       <br />

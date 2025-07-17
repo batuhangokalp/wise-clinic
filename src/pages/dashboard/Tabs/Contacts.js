@@ -362,7 +362,7 @@ const Contacts = (props) => {
                             onClick={(e) => handleContact(e, contact)}
                             className="font-size-14 m-0"
                           >
-                            {contact.name}
+                            {contact?.name}  {contact?.surname}
                           </h5>
                         </div>
                         <UncontrolledDropdown>

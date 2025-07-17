@@ -14,6 +14,7 @@ import * as Yup from "yup";
 import Swal from "sweetalert2";
 import CreateDepartmentModal from "./CreateDepartmentModal";
 import UpdateDepartmentModal from "./UpdateDepartmentModal";
+import { toast } from "react-toastify";
 
 const columns = [
   {
@@ -119,6 +120,7 @@ export default function DepartmentsCard(props) {
         try {
           const response = await dispatch(deleteDepartment(id));
           if (response) {
+            toast.success("Department deleted successfully!");
             dispatch(fetchDepartments());
             dispatch(apiUserError(null));
             dispatch(apiUserSuccess(null));

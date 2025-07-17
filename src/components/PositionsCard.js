@@ -14,6 +14,7 @@ import * as Yup from "yup";
 import Swal from "sweetalert2";
 import CreatePositionModal from "./CreatePositionModal";
 import UpdatePositionModal from "./UpdatePositionModal";
+import { toast } from "react-toastify";
 
 const columns = [
   {
@@ -118,6 +119,7 @@ export default function PositionsCard(props) {
         try {
           const response = await dispatch(deletePosition(id));
           if (response) {
+            toast.success("Position deleted successfully!");
             dispatch(fetchPositions());
             dispatch(apiUserError(null));
             dispatch(apiUserSuccess(null));

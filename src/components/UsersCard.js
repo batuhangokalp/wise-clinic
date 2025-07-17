@@ -8,6 +8,7 @@ import UpdateUserModal from "./UpdateUserModal";
 import { deleteUser, createUser, updateUser } from "../redux/actions";
 import * as Yup from "yup";
 import Swal from "sweetalert2";
+import { toast } from "react-toastify";
 
 const columns = [
   { Header: "Name", accessor: "name" },
@@ -164,6 +165,7 @@ function UsersCard(props) {
         try {
           const response = await dispatch(deleteUser(id));
           if (response) {
+            toast.success("User deleted successfully!");
             dispatch(fetchUsers());
             dispatch(apiUserError(null));
             dispatch(apiUserSuccess(null));

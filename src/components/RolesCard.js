@@ -14,6 +14,7 @@ import CreateRoleModal from "./CreateRoleModal";
 import UpdateRoleModal from "./UpdateRoleModal";
 import * as Yup from "yup";
 import Swal from "sweetalert2";
+import { toast } from "react-toastify";
 
 // Table column definitions
 const columns = [
@@ -109,7 +110,9 @@ export default function RolesCard({ t }) {
     }).then(async (result) => {
       if (result.isConfirmed) {
         const res = await dispatch(deleteRole(id));
+
         if (res) {
+          toast.success("Role deleted successfully!");
           dispatch(fetchRoles());
           resetMessages();
         }

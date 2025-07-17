@@ -12,6 +12,7 @@ import {
 import * as Yup from "yup";
 import Swal from "sweetalert2";
 import CreateTemplateModal from "./CreateTemplateModal";
+import { toast } from "react-toastify";
 
 const columns = [
   {
@@ -200,6 +201,7 @@ export default function TemplatesCard(props) {
         try {
           const response = await dispatch(deleteTemplate(id));
           if (response) {
+            toast.success("Template deleted successfully!");
             dispatch(fetchTemplates());
             dispatch(apiTemplateError(null));
             dispatch(apiTemplateSuccess(null));

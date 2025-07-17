@@ -6,63 +6,129 @@ export default function TemplateEditor({ template, onParamsChange }) {
   const [parsedContent, setParsedContent] = useState([]);
 
   useEffect(() => {
-    if (!template?.content) return;
+    if (
+      !template?.content &&
+      !template?.header &&
+      !template?.footer &&
+      !template?.buttons
+    )
+      return;
 
     const regex = /{{(\d+)}}/g;
-    let match;
-    let lastIndex = 0;
-    const elements = [];
-    let key = 0;
 
-    const currentInputs = { ...inputs };
+    const parseText = (text, currentInputs, keyStart) => {
+      let match;
+      let lastIndex = 0;
+      const elements = [];
+      let key = keyStart;
 
-    while ((match = regex.exec(template.content)) !== null) {
-      const start = match.index;
-      const end = regex.lastIndex;
-      const index = match[1];
+      while ((match = regex.exec(text)) !== null) {
+        const start = match.index;
+        const end = regex.lastIndex;
+        const index = match[1];
 
-      if (start > lastIndex) {
+        if (start > lastIndex) {
+          elements.push(
+            <span key={key++}>{text.slice(lastIndex, start)}</span>
+          );
+        }
+
+        if (!currentInputs[index]) currentInputs[index] = "";
+
         elements.push(
-          <span key={key++}>{template.content.slice(lastIndex, start)}</span>
+          <input
+            key={key++}
+            type="text"
+            value={currentInputs[index]}
+            placeholder={`Param ${index}`}
+            onChange={(e) => {
+              const updatedInputs = {
+                ...inputs,
+                [index]: e.target.value,
+              };
+              setInputs(updatedInputs);
+              onParamsChange?.(updatedInputs);
+            }}
+            style={{
+              margin: "0 4px",
+              padding: "4px 8px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
         );
+
+        lastIndex = end;
       }
 
-      if (!currentInputs[index]) currentInputs[index] = "";
+      if (lastIndex < text.length) {
+        elements.push(<span key={key++}>{text.slice(lastIndex)}</span>);
+      }
 
-      elements.push(
-        <input
-          key={key++}
-          type="text"
-          value={currentInputs[index]}
-          placeholder={`Param ${index}`}
-          onChange={(e) => {
-            const updatedInputs = {
-              ...inputs,
-              [index]: e.target.value,
-            };
-            setInputs(updatedInputs);
-            onParamsChange?.(updatedInputs);
-          }}
-          style={{
-            margin: "0 4px",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-          }}
-        />
-      );
+      return elements;
+    };
 
-      lastIndex = end;
+    const currentInputs = { ...inputs };
+    let keyCounter = 0;
+
+    const headerElements = template.header
+      ? parseText(template.header, currentInputs, keyCounter)
+      : [];
+    keyCounter += headerElements.length;
+
+    const contentElements = template.content
+      ? parseText(template.content, currentInputs, keyCounter)
+      : [];
+    keyCounter += contentElements.length;
+
+    const footerElements = template.footer
+      ? parseText(template.footer, currentInputs, keyCounter)
+      : [];
+    keyCounter += footerElements.length;
+
+    const buttonElements = [];
+    if (template.buttons) {
+      try {
+        const buttons = JSON.parse(template.buttons);
+        buttons.forEach((btn, i) => {
+          if (btn.type === "URL" && btn.url) {
+            buttonElements.push(
+              <a
+                key={`btn-${i}`}
+                href={btn.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-block",
+                  marginTop: "10px",
+                  marginRight: "10px",
+                  padding: "6px 12px",
+                  backgroundColor: "#007bff",
+                  color: "#fff",
+                  textDecoration: "none",
+                  borderRadius: "4px",
+                }}
+              >
+                {btn.text || "Link"}
+              </a>
+            );
+          }
+        });
+      } catch (err) {
+        console.error("Invalid buttons JSON", err);
+      }
     }
 
-    if (lastIndex < template.content.length) {
-      elements.push(
-        <span key={key++}>{template.content.slice(lastIndex)}</span>
-      );
-    }
-
-    setParsedContent(elements);
-  }, [template, inputs]); // inputs'u da ekledik ki güncel değerleri gösterebilsin
+    setParsedContent([
+      ...headerElements,
+      <br key="br-1" />,
+      ...contentElements,
+      <br key="br-2" />,
+      ...footerElements,
+      <br key="br-3" />,
+      ...buttonElements,
+    ]);
+  }, [template, inputs]);
 
   return (
     <div

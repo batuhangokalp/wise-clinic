@@ -6,7 +6,7 @@ function AiSuggestionModal({
   anotherSuggestion,
   onAccept,
   onReject,
-  onClose, 
+  onClose,
   loading,
 }) {
   const finalSuggestion = anotherSuggestion || suggestion;

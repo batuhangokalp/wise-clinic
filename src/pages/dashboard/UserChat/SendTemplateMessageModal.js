@@ -109,7 +109,7 @@ function SendTemplateMessageModal(props) {
 
     handleClose();
   };
-
+console.log("lkfdjskjfgdkjshgjkfdhgfd", template)
   return (
     <Modal
       show={show}

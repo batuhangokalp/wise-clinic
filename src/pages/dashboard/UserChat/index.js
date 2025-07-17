@@ -256,7 +256,6 @@ function UserChat(props) {
       );
 
       const data = await response.json();
-      console.log("response", response);
 
       if (!response.ok) {
         console.error("Mesaj gönderilemedi:", data);
@@ -477,12 +476,11 @@ function UserChat(props) {
     setCurrentChat(messages);
     setAiModalOpen(true);
     setAiLoading(true);
-
+    setAnotherAiResponse(null);
     try {
       const combinedMessage = messages
         .map((msg) => msg.message_content)
         .join("\n");
-
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/api/ai/suggestions`,
         {
@@ -541,6 +539,7 @@ function UserChat(props) {
       if (!response.ok) throw new Error(`HTTP hata: ${response.status}`);
       const data = await response.json();
       setAnotherAiResponse(data.regenerated);
+      console.log("REGENERATE", data);
     } catch (error) {
       console.error("Alternatif AI isteği sırasında hata oluştu:", error);
     } finally {
