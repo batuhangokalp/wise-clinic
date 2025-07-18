@@ -20,7 +20,7 @@ const Index = () => {
 
   useEffect(() => {
     if (hasUnread) {
-      document.title = "Chat | Upsense  🔴";
+      document.title = "🔴 Chat | Upsense ";
     } else {
       document.title = "Chat | Upsense";
     }
