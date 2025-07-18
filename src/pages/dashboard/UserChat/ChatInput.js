@@ -59,12 +59,18 @@ function ChatInput(props) {
 
   //function for file input change
   const handleFileChange = (e) => {
-    if (e.target.files.length !== 0) dispatch(setChatFile(e.target.files[0]));
+    if (e.target.files.length !== 0) {
+      dispatch(setChatFile(e.target.files[0]));
+    }
+
+    // Aynı dosya tekrar seçilsin diye input'u sıfırla
+    e.target.value = null;
   };
 
   //function for image input change
   const handleImageChange = (e) => {
     if (e.target.files.length !== 0) dispatch(setChatFile(e.target.files[0]));
+    e.target.value = null;
   };
 
   //function for send data to onaddMessage function(in userChat/index.js component)

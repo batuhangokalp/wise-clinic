@@ -547,6 +547,17 @@ function UserChat(props) {
       setCustomPrompt("");
     }
   };
+  function replaceTemplateParams(text = "", params = {}) {
+    let result = text;
+    Object.entries(params).forEach(([key, value]) => {
+      const index = key.split("_")[1]; // örn: header_1 -> 1
+      if (index) {
+        const regex = new RegExp(`{{${index}}}`, "g");
+        result = result.replace(regex, value);
+      }
+    });
+    return result;
+  }
 
   return (
     <div className="user-chat w-100 overflow-hidden">
@@ -925,7 +936,7 @@ function UserChat(props) {
 
                                   {/* Ses varsa */}
                                   {FileTypeId.Audio?.includes(
-                                    chat?.file_type_id
+                                    Number(chat?.file_type_id)
                                   ) && <RenderAudio url={chat?.file_path} />}
 
                                   {/* Dosya varsa */}
@@ -956,14 +967,13 @@ function UserChat(props) {
                                       senderType={chat?.sender_type}
                                     />
                                   )}
-
+                                  {console.log("chat:", chat)}
                                   {/* Text mesaj (https ile başlamıyorsa) */}
                                   <div id={`message-${chat.id}`}>
                                     {!chat?.message_content?.startsWith(
                                       "https"
                                     ) && (
                                       <>
-                                        {/* Header varsa göster */}
                                         {chat.header &&
                                           chat.header.trim() !== "" && (
                                             <div
@@ -972,16 +982,20 @@ function UserChat(props) {
                                                 marginBottom: "4px",
                                               }}
                                             >
-                                              {chat.header}
+                                              {replaceTemplateParams(
+                                                chat.header,
+                                                chat.templateParams
+                                              )}
                                             </div>
                                           )}
 
-                                        {/* Mesaj içeriğini göster */}
                                         <div style={{ marginBottom: "8px" }}>
-                                          {chat.message_content}
+                                          {replaceTemplateParams(
+                                            chat.message_content,
+                                            chat.templateParams
+                                          )}
                                         </div>
 
-                                        {/* Footer varsa göster */}
                                         {chat.footer &&
                                           chat.footer.trim() !== "" && (
                                             <div
@@ -991,11 +1005,13 @@ function UserChat(props) {
                                                 marginTop: "4px",
                                               }}
                                             >
-                                              {chat.footer}
+                                              {replaceTemplateParams(
+                                                chat.footer,
+                                                chat.templateParams
+                                              )}
                                             </div>
                                           )}
 
-                                        {/* Butonlar varsa göster */}
                                         {chat.buttons?.length > 0 && (
                                           <div
                                             style={{

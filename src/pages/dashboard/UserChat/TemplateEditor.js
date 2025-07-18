@@ -16,7 +16,7 @@ export default function TemplateEditor({ template, onParamsChange }) {
 
     const regex = /{{(\d+)}}/g;
 
-    const parseText = (text, currentInputs, keyStart) => {
+    const parseText = (text, currentInputs, keyStart, section = "") => {
       let match;
       let lastIndex = 0;
       const elements = [];
@@ -26,6 +26,7 @@ export default function TemplateEditor({ template, onParamsChange }) {
         const start = match.index;
         const end = regex.lastIndex;
         const index = match[1];
+        const stateKey = section + "_" + index;
 
         if (start > lastIndex) {
           elements.push(
@@ -33,18 +34,18 @@ export default function TemplateEditor({ template, onParamsChange }) {
           );
         }
 
-        if (!currentInputs[index]) currentInputs[index] = "";
+        if (!currentInputs[stateKey]) currentInputs[stateKey] = "";
 
         elements.push(
           <input
             key={key++}
             type="text"
-            value={currentInputs[index]}
+            value={currentInputs[stateKey]}
             placeholder={`Param ${index}`}
             onChange={(e) => {
               const updatedInputs = {
                 ...inputs,
-                [index]: e.target.value,
+                [stateKey]: e.target.value,
               };
               setInputs(updatedInputs);
               onParamsChange?.(updatedInputs);
@@ -68,23 +69,24 @@ export default function TemplateEditor({ template, onParamsChange }) {
       return elements;
     };
 
-    const currentInputs = { ...inputs };
-    let keyCounter = 0;
+const currentInputs = { ...inputs };
+let keyCounter = 0;
 
-    const headerElements = template.header
-      ? parseText(template.header, currentInputs, keyCounter)
-      : [];
-    keyCounter += headerElements.length;
+const headerElements = template.header
+  ? parseText(template.header, currentInputs, keyCounter, "header")
+  : [];
+keyCounter += headerElements.length;
 
-    const contentElements = template.content
-      ? parseText(template.content, currentInputs, keyCounter)
-      : [];
-    keyCounter += contentElements.length;
+const contentElements = template.content
+  ? parseText(template.content, currentInputs, keyCounter, "content")
+  : [];
+keyCounter += contentElements.length;
 
-    const footerElements = template.footer
-      ? parseText(template.footer, currentInputs, keyCounter)
-      : [];
-    keyCounter += footerElements.length;
+const footerElements = template.footer
+  ? parseText(template.footer, currentInputs, keyCounter, "footer")
+  : [];
+keyCounter += footerElements.length;
+
 
     const buttonElements = [];
     if (template.buttons) {

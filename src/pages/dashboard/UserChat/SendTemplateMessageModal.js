@@ -6,6 +6,7 @@ import PropTypes from "prop-types";
 import { useSelector, useDispatch } from "react-redux";
 import {
   fetchConversationById,
+  fetchConversations,
   fetchMessagesByConversationId,
   sendMessage,
 } from "../../../redux/actions";
@@ -58,14 +59,26 @@ function SendTemplateMessageModal(props) {
   };
 
   const handleSend = async () => {
+    // Öncelikle parametreleri index numarasına göre sırala ve map et
     const orderedParams = Object.keys(templateParams)
-      .sort((a, b) => Number(a) - Number(b))
+      .sort((a, b) => {
+        const aNum = parseInt(a.match(/_(\d+)$/)[1]);
+        const bNum = parseInt(b.match(/_(\d+)$/)[1]);
+        return aNum - bNum;
+      })
       .map((key) => templateParams[key]);
 
+    // Sonra messageContent'i baştan al
     let messageContent = template?.content || "";
+
+    // Replace işlemi yaparken sadece index numarasına göre değiştir
     Object.entries(templateParams).forEach(([key, value]) => {
-      const regex = new RegExp(`{{${key}}}`, "g");
-      messageContent = messageContent.replace(regex, value);
+      const indexMatch = key.match(/_(\d+)$/);
+      if (indexMatch) {
+        const index = indexMatch[1];
+        const regex = new RegExp(`{{${index}}}`, "g");
+        messageContent = messageContent.replace(regex, value);
+      }
     });
 
     const messageType = template?.template_type?.toLowerCase() || "text";
@@ -102,6 +115,7 @@ function SendTemplateMessageModal(props) {
     }
 
     await dispatch(sendMessage(request));
+    await dispatch(fetchConversations());
     await props.markConversationAsRead();
     setUploadedUrl("");
     await dispatch(fetchConversationById(activeConversation?.id));
@@ -109,7 +123,6 @@ function SendTemplateMessageModal(props) {
 
     handleClose();
   };
-console.log("lkfdjskjfgdkjshgjkfdhgfd", template)
   return (
     <Modal
       show={show}
